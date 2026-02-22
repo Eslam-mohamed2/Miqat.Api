@@ -1,0 +1,6 @@
+@Miqat.Persistence_HostAddress = http://localhost:5288
+
+GET {{Miqat.Persistence_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

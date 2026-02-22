@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/API/">
+    <Project Path="Miqat.Persistence/Miqat.API.csproj" />
+  </Folder>
+  <Folder Name="/Core/">
+    <Project Path="Miqat.Application/Miqat.Application.csproj" />
+    <Project Path="Miqat.Domain/Miqat.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="Miqat.infrastructure.persistence/Miqat.infrastructure.persistence.csproj" />
+    <Project Path="Miqat.Infrastructure/Miqat.Infrastructure.csproj" />
+  </Folder>
+</Solution>

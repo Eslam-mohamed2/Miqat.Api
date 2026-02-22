@@ -1,0 +1,15 @@
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\bin\Debug\net8.0\Miqat.Application.deps.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\bin\Debug\net8.0\Miqat.Application.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\bin\Debug\net8.0\Miqat.Application.pdb
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\bin\Debug\net8.0\Miqat.Domain.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\bin\Debug\net8.0\Miqat.Domain.pdb
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\Miqat.Application.csproj.AssemblyReference.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\Miqat.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\Miqat.Application.AssemblyInfoInputs.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\Miqat.Application.AssemblyInfo.cs
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\Miqat.Application.csproj.CoreCompileInputs.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\Miqat.Ap.B88388D9.Up2Date
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\Miqat.Application.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\refint\Miqat.Application.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\Miqat.Application.pdb
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Application\obj\Debug\net8.0\ref\Miqat.Application.dll

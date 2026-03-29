@@ -11,6 +11,7 @@ C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.infrastruc
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.infrastructure.persistence\obj\Debug\net8.0\Miqat.infrastructure.persistence.AssemblyInfoInputs.cache
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.infrastructure.persistence\obj\Debug\net8.0\Miqat.infrastructure.persistence.AssemblyInfo.cs
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.infrastructure.persistence\obj\Debug\net8.0\Miqat.infrastructure.persistence.csproj.CoreCompileInputs.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.infrastructure.persistence\obj\Debug\net8.0\Miqat.infrastructure.persistence.sourcelink.json
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.infrastructure.persistence\obj\Debug\net8.0\Miqat.in.B2E0E81A.Up2Date
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.infrastructure.persistence\obj\Debug\net8.0\Miqat.infrastructure.persistence.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.infrastructure.persistence\obj\Debug\net8.0\refint\Miqat.infrastructure.persistence.dll

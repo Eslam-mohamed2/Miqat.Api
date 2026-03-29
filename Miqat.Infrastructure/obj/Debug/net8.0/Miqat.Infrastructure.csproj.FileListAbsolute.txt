@@ -1,0 +1,12 @@
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\bin\Debug\net8.0\Miqat.Infrastructure.deps.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\bin\Debug\net8.0\Miqat.Infrastructure.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\bin\Debug\net8.0\Miqat.Infrastructure.pdb
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\Miqat.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\Miqat.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\Miqat.Infrastructure.AssemblyInfo.cs
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\Miqat.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\Miqat.Infrastructure.sourcelink.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\Miqat.Infrastructure.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\refint\Miqat.Infrastructure.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\Miqat.Infrastructure.pdb
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Infrastructure\obj\Debug\net8.0\ref\Miqat.Infrastructure.dll

@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Miqat.API.Controller/1.0.0": {
+        "runtime": {
+          "Miqat.API.Controller.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Miqat.API.Controller/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

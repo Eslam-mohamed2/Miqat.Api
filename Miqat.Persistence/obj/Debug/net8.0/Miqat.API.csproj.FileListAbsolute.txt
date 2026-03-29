@@ -1,5 +1,9 @@
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\appsettings.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\groups.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\notifications.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\tasks.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\users.json
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Miqat.API.staticwebassets.endpoints.json
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Miqat.API.exe
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Miqat.API.deps.json
@@ -8,8 +12,11 @@ C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistenc
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Miqat.API.pdb
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Azure.Core.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Azure.Identity.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\BCrypt.Net-Next.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Humanizer.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.Bcl.TimeProvider.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
@@ -136,6 +143,7 @@ C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistenc
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\Miqat.API.csproj.CoreCompileInputs.cache
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\Miqat.API.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\Miqat.API.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\Miqat.API.sourcelink.json
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json

@@ -1,43 +1,49 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Miqat.Application.Interfaces;
+using Miqat.Domain.Specifications;
 using Miqat.infrastructure.persistence.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Miqat.infrastructure.persistence.Specifications;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Miqat.infrastructure.persistence.Repositories.GenericRepository
-{   
+{
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private  readonly MiqatDbContext _context;
+        private readonly MiqatDbContext _context;
+
         public GenericRepository(MiqatDbContext context) => _context = context;
 
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
-        {
-            return await _context.Set<T>().Where(predicate).ToListAsync();
-        }
         public async Task<IReadOnlyList<T>> GetAllAsync()
-        {
-            return await _context.Set<T>().ToListAsync();
-        }
-        public async Task<T> GetByIdAsync(Guid id)
-        {
-            return await _context.Set<T>().FindAsync(id);
-        }
+            => await _context.Set<T>().ToListAsync();
+
+        public async Task<T?> GetByIdAsync(Guid id)
+            => await _context.Set<T>().FindAsync(id);
+
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+            => await _context.Set<T>().Where(predicate).ToListAsync();
+
         public async Task AddAsync(T entity)
-        {
-            await _context.Set<T>().AddAsync(entity);
-        }
+            => await _context.Set<T>().AddAsync(entity);
+
         public void Update(T entity)
-        {
-            _context.Set<T>().Update(entity);
-        }
+            => _context.Set<T>().Update(entity);
+
         public void Delete(T entity)
-        {
-            _context.Set<T>().Remove(entity);
-        }
+            => _context.Set<T>().Remove(entity);
+
+        // Specification methods
+        public async Task<T?> GetEntityWithSpec(ISpecification<T> spec)
+            => await ApplySpecification(spec).FirstOrDefaultAsync();
+
+        public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
+            => await ApplySpecification(spec).ToListAsync();
+
+        public async Task<int> CountAsync(ISpecification<T> spec)
+            => await ApplySpecification(spec).CountAsync();
+
+        private IQueryable<T> ApplySpecification(ISpecification<T> spec)
+            => SpecificationEvaluator<T>.GetQuery(
+                _context.Set<T>().AsQueryable(), spec);
     }
 }

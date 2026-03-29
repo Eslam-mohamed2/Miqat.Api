@@ -1,0 +1,110 @@
+[
+  {
+    "id": "1533661d-c702-4c30-ad1f-2868205f35cb",
+    "title": "New Task Assigned",
+    "message": "Eslam assigned you Design API Architecture",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000000-0000-0000-0000-000000000002",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000001",
+    "isRead": false
+  },
+  {
+    "id": "a94f1d95-58a5-4c93-93d9-4271e301530b",
+    "title": "New Task Assigned",
+    "message": "You have been assigned Write Unit Tests",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000000-0000-0000-0000-000000000003",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000001",
+    "isRead": false
+  },
+  {
+    "id": "2c818d6c-3583-4910-9d12-68dc40ecf2fd",
+    "title": "Group Invite",
+    "message": "You have been added to Product Engineering",
+    "type": "GroupInvite",
+    "recipientUserId": "00000000-0000-0000-0000-000000000004",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000001",
+    "isRead": false
+  },
+  {
+    "id": "9ea8d8a5-8860-484e-a57d-e3429ed575c6",
+    "title": "Group Invite",
+    "message": "You have been added to Marketing and Growth",
+    "type": "GroupInvite",
+    "recipientUserId": "00000000-0000-0000-0000-000000000012",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000011",
+    "isRead": false
+  },
+  {
+    "id": "0129e310-cc97-4b05-bb64-6fe73612c1b1",
+    "title": "Task Due Soon",
+    "message": "Q3 Budget Review is due in 2 days",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000000-0000-0000-0000-000000000006",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "4508fce6-0d6d-40bf-9af2-42b41cb608f3",
+    "title": "Task Due Soon",
+    "message": "Setup CI/CD Pipeline is due in 5 days",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000000-0000-0000-0000-000000000037",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "b4ce31de-b207-4c8a-a486-1e118837eb0f",
+    "title": "Task Completed",
+    "message": "Omar completed Write Unit Tests",
+    "type": "TaskCompleted",
+    "recipientUserId": "00000000-0000-0000-0000-000000000001",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000003",
+    "isRead": false
+  },
+  {
+    "id": "fc666a78-f6a5-42ec-be1d-72bdc9a78b50",
+    "title": "Task Completed",
+    "message": "James completed Setup CI/CD Pipeline",
+    "type": "TaskCompleted",
+    "recipientUserId": "00000000-0000-0000-0000-000000000035",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000027",
+    "isRead": false
+  },
+  {
+    "id": "2caf4674-74c0-4990-acc9-1d8e2c0ea2e3",
+    "title": "Mentioned in Task",
+    "message": "Sara mentioned you in API Documentation",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000000-0000-0000-0000-000000000004",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000002",
+    "isRead": false
+  },
+  {
+    "id": "a6741793-1c0a-4985-bad5-5df657f25a88",
+    "title": "Mentioned in Task",
+    "message": "Eslam mentioned you in Team Building Event",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000000-0000-0000-0000-000000000002",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000001",
+    "isRead": false
+  },
+  {
+    "id": "d109f5a8-0318-449d-8a1b-59279ed61f05",
+    "title": "Group Invite",
+    "message": "You have been added to Design System",
+    "type": "GroupInvite",
+    "recipientUserId": "00000000-0000-0000-0000-000000000029",
+    "triggeredByUserId": "00000000-0000-0000-0000-000000000027",
+    "isRead": false
+  },
+  {
+    "id": "6822699e-0034-4f8b-8e8f-0e45b974739b",
+    "title": "Task Due Soon",
+    "message": "Invoice Processing is due tomorrow",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000000-0000-0000-0000-000000000017",
+    "triggeredByUserId": null,
+    "isRead": false
+  }
+]

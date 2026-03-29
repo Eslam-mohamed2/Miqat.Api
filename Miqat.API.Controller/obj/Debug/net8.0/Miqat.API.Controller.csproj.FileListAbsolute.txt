@@ -1,0 +1,12 @@
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\bin\Debug\net8.0\Miqat.API.Controller.deps.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\bin\Debug\net8.0\Miqat.API.Controller.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\bin\Debug\net8.0\Miqat.API.Controller.pdb
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\Miqat.API.Controller.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\Miqat.API.Controller.AssemblyInfoInputs.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\Miqat.API.Controller.AssemblyInfo.cs
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\Miqat.API.Controller.csproj.CoreCompileInputs.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\Miqat.API.Controller.sourcelink.json
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\Miqat.API.Controller.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\refint\Miqat.API.Controller.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\Miqat.API.Controller.pdb
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.API.Controller\obj\Debug\net8.0\ref\Miqat.API.Controller.dll

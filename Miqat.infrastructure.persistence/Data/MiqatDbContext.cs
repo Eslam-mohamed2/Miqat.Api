@@ -10,18 +10,23 @@ namespace Miqat.infrastructure.persistence.Data
 {
     public class MiqatDbContext : DbContext
     {
-        public MiqatDbContext(DbContextOptions<MiqatDbContext> options) : base(options)
-        {
-        }
+        public MiqatDbContext(DbContextOptions<MiqatDbContext> options)
+            : base(options) { }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<TaskItem> TaskItems { get; set; }
+        public DbSet<User> Users => Set<User>();
+        public DbSet<TaskItem> Tasks => Set<TaskItem>();
+        public DbSet<Group> Groups => Set<Group>();
+        public DbSet<GroupMember> GroupMembers => Set<GroupMember>();
+        public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(MiqatDbContext).Assembly);
+            // Auto-picks up ALL IEntityTypeConfiguration classes in this assembly
+            modelBuilder.ApplyConfigurationsFromAssembly(
+                typeof(MiqatDbContext).Assembly);
         }
     }
 }

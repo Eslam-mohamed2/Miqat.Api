@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Miqat.Domain.Enumerations
 {
-    public  enum TaskStatus
+    public enum TaskStatus
     {
         Pending,
         In_progress,

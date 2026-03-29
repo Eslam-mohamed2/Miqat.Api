@@ -5,6 +5,7 @@ C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Domain\obj
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Domain\obj\Debug\net8.0\Miqat.Domain.AssemblyInfoInputs.cache
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Domain\obj\Debug\net8.0\Miqat.Domain.AssemblyInfo.cs
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Domain\obj\Debug\net8.0\Miqat.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Domain\obj\Debug\net8.0\Miqat.Domain.sourcelink.json
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Domain\obj\Debug\net8.0\Miqat.Domain.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Domain\obj\Debug\net8.0\refint\Miqat.Domain.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Domain\obj\Debug\net8.0\Miqat.Domain.pdb

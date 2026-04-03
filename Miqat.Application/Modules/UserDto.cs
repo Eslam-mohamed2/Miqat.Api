@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Miqat.Application.Modules;
 
-namespace Miqat.Application.Modules
+public class UserDto
 {
-    public class UserDto
-    {
-        public Guid Id { get; set; }
-        public string FullName { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public DateTime? DateOfBirth { get; set; }
-        public string gender { get; set; } = string.Empty;
-    }
+    public Guid Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
+    public string? ProfilePictureUrl { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public string? Gender { get; set; }
+    public string? Country { get; set; }
+    public string? TimeZone { get; set; }
+    public string Role { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public bool IsVerified { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

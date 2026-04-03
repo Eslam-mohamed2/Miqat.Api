@@ -7,14 +7,15 @@ namespace Miqat.API.Controllers
     [Route("api/[controller]")]
     public class BaseApiController : ControllerBase
     {
-        protected IActionResult HandleResponse<T>(T date , string Message = null)
+        protected IActionResult HandleResponse<T>(T data, string? message = null)
         {
-           var response = new ApiResponse<T>(date, Message);
+            var response = ApiResponse<T>.Ok(data, message);
             return Ok(response);
         }
-        protected IActionResult HandleError(string message, List<string> errors = null!)
+
+        protected IActionResult HandleError(string message, List<string>? errors = null)
         {
-            var response = new ApiResponse<string>(message, errors);
+            var response = ApiResponse<string>.Fail(message, errors);
             return BadRequest(response);
         }
     }

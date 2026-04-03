@@ -160,3 +160,15 @@ C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistenc
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\Miqat.API.pdb
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\Miqat.API.genruntimeconfig.cache
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\obj\Debug\net8.0\ref\Miqat.API.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\FluentValidation.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\FluentValidation.AspNetCore.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\FluentValidation.DependencyInjectionExtensions.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Google.Apis.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Google.Apis.Auth.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Google.Apis.Core.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\MailKit.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\MimeKit.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\System.Management.dll
+C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Management.dll

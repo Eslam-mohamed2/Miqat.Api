@@ -22,6 +22,12 @@ namespace Miqat.Domain.Entities
         public UserRole Role { get; set; } = UserRole.User;
         public bool IsActive { get; set; } = true;
         public bool IsVerified { get; set; } = false;
+        public string? GoogleId { get; set; }
+        public bool IsGoogleAccount { get; set; } = false;
+
+        // Google OAuth
+        public virtual ICollection<OtpCode> OtpCodes { get; set; } = new List<OtpCode>();
+        public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
 
         // Navigation
         public virtual ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();

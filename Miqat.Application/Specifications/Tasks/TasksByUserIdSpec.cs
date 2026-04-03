@@ -13,6 +13,7 @@ namespace Miqat.Application.Specifications.Tasks
         public TasksByUserIdSpec(Guid userId)
             : base(t => t.UserId == userId && !t.IsDeleted)
         {
+            AddInclude(t => t.User);
             AddInclude(t => t.AssignedToUser!);
             AddInclude(t => t.Group!);
             AddOrderByDescending(t => t.CreatedAt);

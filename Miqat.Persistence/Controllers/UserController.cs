@@ -1,53 +1,75 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Miqat.Application.Interfaces;
 using Miqat.Application.Modules;
+using System.Security.Claims;
 
 namespace Miqat.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    public class UserController : BaseApiController
+    [Route("api/[controller]")]
+    [Authorize]
+    public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+
         public UserController(IUserService userService)
         {
             _userService = userService;
         }
 
+        private Guid GetCurrentUserId() =>
+            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe()
+        {
+            var user = await _userService.GetUserById(GetCurrentUserId());
+            if (user == null) return NotFound(new { message = "User not found." });
+            return Ok(user);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var user = await _userService.GetUserById(id);
+            if (user == null) return NotFound(new { message = "User not found." });
+            return Ok(user);
+        }
+
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsers();
-            return HandleResponse(users);
-        }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(Guid id)
-        {
-            var user = await _userService.GetUserById(id);
-            if (user == null) return HandleError("User not found");
-            return HandleResponse(user);
+            return Ok(users);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateUser(UserDto userDto)
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateMe([FromBody] UserDto dto)
         {
-            var createdUser = await _userService.CreateAsync(userDto);
-            return HandleResponse(createdUser, "User created successfully");
+            var result = await _userService.UpdateAsync(GetCurrentUserId(), dto);
+            if (!result) return NotFound(new { message = "User not found." });
+            return NoContent();
         }
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(Guid id, UserDto userDto)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UserDto dto)
         {
-            var isUpdated = await _userService.UpdateAsync(id, userDto);
-            if (!isUpdated) return HandleError("User not found or update failed");
-            return HandleResponse(isUpdated, "User updated successfully");
+            var result = await _userService.UpdateAsync(id, dto);
+            if (!result) return NotFound(new { message = "User not found." });
+            return NoContent();
         }
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var isDeleted = await _userService.DeleteAsync(id);
-            if (!isDeleted) return HandleError("User not found or delete failed");
-            return HandleResponse(isDeleted, "User deleted successfully");
+            var result = await _userService.DeleteAsync(id);
+            if (!result) return NotFound(new { message = "User not found." });
+            return NoContent();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Miqat.Application.Common;
 using Miqat.Application.Interfaces;
 using Miqat.Application.Modules;
+using Miqat.Application.Specifications.Users;
 using Miqat.Domain.Entities;
 using Miqat.Domain.Enumerations;
 
@@ -9,61 +10,75 @@ namespace Miqat.Application.Services
 {
     public class UserService : IUserService
     {
-        readonly  IUnitOfWork _unitOfWork;
-        readonly  UserMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly UserMapper _mapper;
 
         public UserService(IUnitOfWork unitOfWork, UserMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
+
         public async Task<IEnumerable<UserDto>> GetAllUsers()
         {
             var users = await _unitOfWork.Repository<User>().GetAllAsync();
             return _mapper.MapUsersToDtos(users);
         }
-        public async Task<UserDto> GetUserById(Guid id)
+
+        public async Task<UserDto?> GetUserById(Guid id)
         {
-            var userEnitiy = await _unitOfWork.Repository<User>().GetByIdAsync(id);
-            return _mapper.MapUserToDto(userEnitiy);
+            var spec = new UserByIdWithDetailsSpec(id);
+            var user = await _unitOfWork.Repository<User>()
+                .GetEntityWithSpec(spec);
+            return user != null ? _mapper.MapUserToDto(user) : null;
         }
 
-        public async Task<UserDto> CreateAsync(UserDto user)
+        public async Task<UserDto> CreateAsync(UserDto dto)
         {
-            Enum.TryParse<Gender>(user.gender, out var genderValue);
+            Enum.TryParse<Gender>(dto.Gender, out var gender);
 
-            var userEntity = new User(
-                user.FullName,
-                user.Email,
-                user.DateOfBirth ?? DateTime.Now,
-                genderValue,  
-                user.Country
+            var entity = new User(
+                dto.FullName,
+                dto.Email,
+                dto.DateOfBirth ?? DateTime.UtcNow,
+                gender,
+                dto.Country,
+                dto.PhoneNumber,
+                dto.TimeZone
             );
-            await _unitOfWork.Repository<User>().AddAsync(userEntity);
-            await _unitOfWork.CompleteAsync();
 
-            return _mapper.MapUserToDto(userEntity);
+            await _unitOfWork.Repository<User>().AddAsync(entity);
+            await _unitOfWork.CompleteAsync();
+            return _mapper.MapUserToDto(entity);
         }
-        public async Task<bool> UpdateAsync(Guid id, UserDto userDto)
+
+        public async Task<bool> UpdateAsync(Guid id, UserDto dto)
         {
-            var userEntity = await _unitOfWork.Repository<User>().GetByIdAsync(id);
-            if (userEntity == null) return false;
-            userEntity.FullName = userDto.FullName;
-            userEntity.Email = userDto.Email;
-            userEntity.Country = userDto.Country;
-            userEntity.DateOfBirth = userDto.DateOfBirth;
-            if (Enum.TryParse<Gender>(userDto.gender, out var genderEnum))
-            {
-                userEntity.Gender = genderEnum;
-            }
-            _unitOfWork.Repository<User>().Update(userEntity);
+            var entity = await _unitOfWork.Repository<User>().GetByIdAsync(id);
+            if (entity == null) return false;
+
+            entity.FullName = dto.FullName;
+            entity.Email = dto.Email;
+            entity.Country = dto.Country;
+            entity.DateOfBirth = dto.DateOfBirth;
+            entity.PhoneNumber = dto.PhoneNumber;
+            entity.ProfilePictureUrl = dto.ProfilePictureUrl;
+            entity.TimeZone = dto.TimeZone;
+
+            if (Enum.TryParse<Gender>(dto.Gender, out var gender))
+                entity.Gender = gender;
+
+            entity.SetUpdated();
+            _unitOfWork.Repository<User>().Update(entity);
             return await _unitOfWork.CompleteAsync() > 0;
         }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
-            var userEnitiy = _unitOfWork.Repository<User>().GetByIdAsync(id);
-            if (userEnitiy == null) return false;
-            _unitOfWork.Repository<User>().Delete(userEnitiy.Result);
+            var entity = await _unitOfWork.Repository<User>().GetByIdAsync(id);
+            if (entity == null) return false;
+            entity.SoftDelete();
+            _unitOfWork.Repository<User>().Update(entity);
             return await _unitOfWork.CompleteAsync() > 0;
         }
     }

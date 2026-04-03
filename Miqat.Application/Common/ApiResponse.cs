@@ -9,23 +9,23 @@ namespace Miqat.Application.Common
 {
     public class ApiResponse<T>
     {
-        public bool IsSuccess { get; set; }
-        public T? Data { get; set; }
+        public bool Success { get; set; }
         public string? Message { get; set; }
-        public List<string> Errors { get; set; }
-        // Success response constructor
-        public ApiResponse(T data, string message = null!)
+        public T? Data { get; set; }
+        public List<string>? Errors { get; set; }
+
+        public static ApiResponse<T> Ok(T data, string? message = null) => new()
         {
-            IsSuccess = true;
-            Data = data;
-            Message = message;
-        }
-        // Failure response constructor
-        public ApiResponse(string message, List<string> errors = null!)
+            Success = true,
+            Data = data,
+            Message = message
+        };
+
+        public static ApiResponse<T> Fail(string message, List<string>? errors = null) => new()
         {
-            IsSuccess = false;
-            Message = message;
-            Errors = errors;
-        }
+            Success = false,
+            Message = message,
+            Errors = errors
+        };
     }
 }

@@ -50,6 +50,7 @@ namespace Miqat.infrastructure.persistence.Data.Seeds
                 );
 
                 SetId(user, Guid.Parse(dto.Id));
+
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.PasswordPlain);
                 user.Role = role;
                 user.IsActive = dto.IsActive;

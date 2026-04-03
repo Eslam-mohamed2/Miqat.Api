@@ -19,6 +19,8 @@ namespace Miqat.infrastructure.persistence.Data
         public DbSet<GroupMember> GroupMembers => Set<GroupMember>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+        public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
+        public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

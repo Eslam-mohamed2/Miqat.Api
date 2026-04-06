@@ -6,3 +6,8 @@
 **/*.user
 **/.gitignore
 **/appsettings.Development.json
+**/node_modules
+**/*.md
+**/.DS_Store
+**/TestResults
+**/*.log

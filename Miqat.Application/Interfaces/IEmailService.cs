@@ -11,5 +11,6 @@ namespace Miqat.Application.Interfaces
         Task SendOtpAsync(string toEmail, string fullName, string otp);
         Task SendPasswordResetAsync(string toEmail, string fullName, string resetLink);
         Task SendWelcomeAsync(string toEmail, string fullName);
+        Task SendPasswordResetOtpAsync(string toEmail, string fullName, string otp);
     }
 }

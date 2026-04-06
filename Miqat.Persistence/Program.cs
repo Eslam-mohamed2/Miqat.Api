@@ -19,8 +19,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ── Database ──────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<MiqatDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("Miqat.infrastructure.persistence")));
 
 // ── JWT Settings ──────────────────────────────────────────────────────────────
 builder.Services.Configure<JwtSettings>(
@@ -120,11 +121,35 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
+// ── CORS ──────────────────────────────────────────────────────────────────────
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowVercel", policy =>
+    {
+        policy.WithOrigins(
+                builder.Configuration["AllowedOrigins"] ?? "*")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
+// ── Auto Migrate ──────────────────────────────────────────────────────────────
+try
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<MiqatDbContext>();
+    db.Database.Migrate();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[Migration] ❌ Failed: {ex.Message}");
+}
+
 // ── Seeder ────────────────────────────────────────────────────────────────────
-try                                                          // ✅ wrapped
+try
 {
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<SeederRunner>();
@@ -132,20 +157,20 @@ try                                                          // ✅ wrapped
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"[Seeder] ❌ Failed: {ex.Message}");  // ✅ won't crash app
+    Console.WriteLine($"[Seeder] ❌ Failed: {ex.Message}");
 }
 
 // ── Middleware Pipeline ───────────────────────────────────────────────────────
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
+app.UseCors("AllowVercel");
 app.UseHttpsRedirection();
-app.UseMiddleware<GlobalExceptionMiddleware>();  // ✅ moved after HTTPS
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+// ── Port Binding for Railway ──────────────────────────────────────────────────
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Run($"http://0.0.0.0:{port}");

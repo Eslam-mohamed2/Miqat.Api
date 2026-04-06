@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Miqat.Application.Common;
 using Miqat.Application.Interfaces;
 using Miqat.Application.Modules;
+using System.Security.Claims;
 
 namespace Miqat.API.Controllers
 {
@@ -103,6 +105,30 @@ namespace Miqat.API.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
+        }
+
+        [HttpPost("resend-otp")]
+        public async Task<IActionResult> ResendOtp([FromBody] ResendOtpDto request)
+        {
+            await _authService.ResendOtpAsync(request);
+            return Ok(new { message = "New OTP sent! Please check your email." });
+        }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto request)
+        {
+            if (request.NewPassword != request.ConfirmPassword)
+                return BadRequest(new { message = "Passwords do not match." });
+
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            await _authService.ChangePasswordAsync(
+                userId,
+                request.CurrentPassword,
+                request.NewPassword);
+
+            return Ok(new { message = "Password changed successfully." });
         }
     }
 }

@@ -91,5 +91,21 @@ namespace Miqat.infrastructure.persistence.Services
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
         }
+
+        public async Task SendPasswordResetOtpAsync(
+            string toEmail, string fullName, string otp)
+                {
+                    var subject = "Reset Your Miqat Password";
+                    var body = $@"
+                <h2>Hello {fullName}!</h2>
+                <p>Your password reset code is:</p>
+                <h1 style='color:#EF4444;letter-spacing:8px'>{otp}</h1>
+                <p>This code expires in <strong>10 minutes</strong>.</p>
+                <p>If you didn't request this, ignore this email.</p>
+                <br/>
+                <p>Miqat Smart Calendar Team</p>";
+
+                    await SendEmailAsync(toEmail, fullName, subject, body);
+        }
     }
 }

@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace Miqat.Application.Modules
 {
-    public class ResetPasswordDto
+    public class ResendOtpDto
     {
         public string Email { get; set; } = string.Empty;
-        public string Token { get; set; } = string.Empty;
-        public string NewPassword { get; set; } = string.Empty;
-        public string ConfirmPassword { get; set; } = string.Empty;
+        public string Purpose { get; set; } = string.Empty; // "EmailVerification" or "PasswordReset"
     }
 }

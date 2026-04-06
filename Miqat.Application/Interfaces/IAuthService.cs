@@ -17,5 +17,7 @@ namespace Miqat.Application.Interfaces
         Task<bool> ForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(ResetPasswordDto request);
         Task<AuthResponseDto> GoogleLoginAsync(string googleToken, string ipAddress);
+        Task<bool> ResendOtpAsync(ResendOtpDto request); // ← CHANGED
+        Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
     }
 }

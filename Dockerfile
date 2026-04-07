@@ -8,7 +8,6 @@ COPY ["Miqat.Application/Miqat.Application.csproj", "Miqat.Application/"]
 COPY ["Miqat.Domain/Miqat.Domain.csproj", "Miqat.Domain/"]
 COPY ["Miqat.Infrastructure/Miqat.Infrastructure.csproj", "Miqat.Infrastructure/"]
 COPY ["Miqat.infrastructure.persistence/Miqat.infrastructure.persistence.csproj", "Miqat.infrastructure.persistence/"]
-COPY ["Miqat.Persistence/Miqat.Persistence.csproj", "Miqat.Persistence/"]
 
 # Restore all NuGet packages
 RUN dotnet restore "Miqat.API.Controller/Miqat.API.Controller.csproj"
@@ -25,6 +24,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 EXPOSE 8080
 
+# Copy only the published output from the build stage
 COPY --from=build /app/publish .
 
+# Start the application
 ENTRYPOINT ["dotnet", "Miqat.API.Controller.dll"]

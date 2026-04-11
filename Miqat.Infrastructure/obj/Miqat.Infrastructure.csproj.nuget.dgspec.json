@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Eslam\\OneDrive\\Desktop\\Develpoment Mode\\Back-End\\Miqat\\Miqat.Infrastructure\\Miqat.Infrastructure.csproj": {}
+    "E:\\Projects\\Miqat\\Miqat.Infrastructure\\Miqat.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Eslam\\OneDrive\\Desktop\\Develpoment Mode\\Back-End\\Miqat\\Miqat.Infrastructure\\Miqat.Infrastructure.csproj": {
+    "E:\\Projects\\Miqat\\Miqat.Infrastructure\\Miqat.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Eslam\\OneDrive\\Desktop\\Develpoment Mode\\Back-End\\Miqat\\Miqat.Infrastructure\\Miqat.Infrastructure.csproj",
+        "projectUniqueName": "E:\\Projects\\Miqat\\Miqat.Infrastructure\\Miqat.Infrastructure.csproj",
         "projectName": "Miqat.Infrastructure",
-        "projectPath": "C:\\Users\\Eslam\\OneDrive\\Desktop\\Develpoment Mode\\Back-End\\Miqat\\Miqat.Infrastructure\\Miqat.Infrastructure.csproj",
+        "projectPath": "E:\\Projects\\Miqat\\Miqat.Infrastructure\\Miqat.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\Eslam\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Eslam\\OneDrive\\Desktop\\Develpoment Mode\\Back-End\\Miqat\\Miqat.Infrastructure\\obj\\",
+        "outputPath": "E:\\Projects\\Miqat\\Miqat.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

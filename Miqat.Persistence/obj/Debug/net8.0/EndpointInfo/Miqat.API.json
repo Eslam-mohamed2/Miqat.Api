@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Miqat.API",
-    "version": "1.0"
+    "title": "Miqat API",
+    "version": "v1"
   },
   "paths": {
     "/api/Auth/login": {

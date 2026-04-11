@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0
 WORKDIR /app
 
+# Force rebuild - v3
 COPY . .
 
 RUN dotnet restore "Miqat.Persistence/Miqat.API.csproj" && \

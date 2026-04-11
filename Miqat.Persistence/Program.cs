@@ -22,7 +22,6 @@ builder.Services.AddDbContext<MiqatDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("Miqat.infrastructure.persistence")));
-
 // ── JWT Settings ──────────────────────────────────────────────────────────────
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
@@ -53,6 +52,21 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+                "https://mqiat.vercel.app",
+                "http://localhost:3000",
+                "http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
 // ── Repositories & UoW ───────────────────────────────────────────────────────
 builder.Services.AddScoped(typeof(IGenericRepository<>),
@@ -91,6 +105,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Miqat API",
+        Version = "v1"
+    });
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -121,18 +141,6 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
-// ── CORS ──────────────────────────────────────────────────────────────────────
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowVercel", policy =>
-    {
-        policy.WithOrigins(
-                builder.Configuration["AllowedOrigins"] ?? "*")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-
 // ─────────────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
@@ -142,6 +150,7 @@ try
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<MiqatDbContext>();
     db.Database.Migrate();
+    Console.WriteLine("[Migration] ✅ Database migrated successfully.");
 }
 catch (Exception ex)
 {
@@ -162,15 +171,21 @@ catch (Exception ex)
 
 // ── Middleware Pipeline ───────────────────────────────────────────────────────
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Miqat API v1");
+    c.RoutePrefix = "swagger";
+});
 
-app.UseCors("AllowVercel");
-app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
+
+// Do NOT use UseHttpsRedirection — Railway handles HTTPS at proxy level
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
 // ── Port Binding for Railway ──────────────────────────────────────────────────
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+Console.WriteLine($"[Startup] Starting on port {port}");
 app.Run($"http://0.0.0.0:{port}");

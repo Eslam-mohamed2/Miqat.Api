@@ -14,7 +14,6 @@ C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistenc
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Humanizer.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
-C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.Bcl.TimeProvider.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
 C:\Users\Eslam\OneDrive\Desktop\Develpoment Mode\Back-End\Miqat\Miqat.Persistence\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll

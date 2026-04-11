@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Miqat.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+374e0e3a5f0cb8b1299af41a1c005e980f77ed09")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2d5a33f035378dee7d5c03454eedafc086e4a4ca")]
 [assembly: System.Reflection.AssemblyProductAttribute("Miqat.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Miqat.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

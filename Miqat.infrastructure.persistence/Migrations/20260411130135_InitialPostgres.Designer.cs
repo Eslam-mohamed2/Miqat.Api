@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Miqat.infrastructure.persistence.Migrations
 {
     [DbContext(typeof(MiqatDbContext))]
-    [Migration("20260406221252_InitialPostgres")]
+    [Migration("20260411130135_InitialPostgres")]
     partial class InitialPostgres
     {
         /// <inheritdoc />

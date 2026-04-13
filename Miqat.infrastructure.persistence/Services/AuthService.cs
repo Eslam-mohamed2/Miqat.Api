@@ -149,16 +149,19 @@ namespace Miqat.infrastructure.persistence.Services
             await _unitOfWork.Repository<OtpCode>().AddAsync(otp);
             await _unitOfWork.CompleteAsync();
 
-            try
+            _ = Task.Run(async () =>
             {
-                await _emailService.SendOtpAsync(user.Email, user.FullName, otpCode);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Email] Failed: {ex.Message}");
-                Console.WriteLine($"[Dev OTP] Email: {user.Email} | Code: {otpCode}");
-            }
-
+                try
+                {
+                    await _emailService.SendOtpAsync(user.Email, user.FullName, otpCode);
+                    Console.WriteLine($"[Email] OTP sent to {user.Email}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Email] Failed: {ex.Message}");
+                    Console.WriteLine($"[Dev OTP] {user.Email} | Code: {otpCode}");
+                }
+            });
             return true;
         }
 

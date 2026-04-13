@@ -60,8 +60,6 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "https://mqiat.vercel.app",
-                "http://localhost:3000",
-                "http://localhost:5173",
                 "http://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod()

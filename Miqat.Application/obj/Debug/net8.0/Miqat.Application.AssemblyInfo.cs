@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Miqat.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3658602ca73fc7869e6746faee021d0fd8048e62")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+39b2649a560203a0aa33bca7bc838bd7b908de8a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Miqat.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Miqat.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

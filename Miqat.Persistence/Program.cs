@@ -22,6 +22,7 @@ builder.Services.AddDbContext<MiqatDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("Miqat.infrastructure.persistence")));
+
 // ── JWT Settings ──────────────────────────────────────────────────────────────
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
@@ -58,7 +59,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
         policy.WithOrigins(
-            "https://miqat.vercel.app",
+            "https://miqat.vercel.app",     // 🔁 confirm this is your exact Vercel URL
             "http://localhost:3000",
             "http://localhost:4200",
             "https://localhost:7000")
@@ -66,8 +67,6 @@ builder.Services.AddCors(options =>
         .AllowAnyMethod()
         .AllowCredentials());
 });
-
-
 
 // ── Repositories & UoW ───────────────────────────────────────────────────────
 builder.Services.AddScoped(typeof(IGenericRepository<>),
@@ -178,6 +177,9 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
+// ✅ CORS is now FIRST — before all other middleware
+app.UseCors("AllowFrontend");
+
 app.UseExceptionHandler(appError =>
 {
     appError.Run(async context =>
@@ -189,10 +191,7 @@ app.UseExceptionHandler(appError =>
     });
 });
 
-
-// Do NOT use UseHttpsRedirection — Railway handles HTTPS at proxy level
 app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

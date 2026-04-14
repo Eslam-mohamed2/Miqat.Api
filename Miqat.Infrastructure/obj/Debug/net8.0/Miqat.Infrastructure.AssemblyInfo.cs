@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Miqat.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ef3b5403bffc85ae787ef5b588c11bdeaba1571")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e0e02bf66b9de279e497f7bf6ff4d8e9a08798a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Miqat.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Miqat.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

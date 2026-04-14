@@ -57,15 +57,17 @@ builder.Services.AddAuthorization();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-    {
         policy.WithOrigins(
-                "https://mqiat.vercel.app",
-                "http://localhost:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
+            "https://miqat.vercel.app",
+            "http://localhost:3000",
+            "http://localhost:4200",
+            "https://localhost:7000")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
 });
+
+
 
 // ── Repositories & UoW ───────────────────────────────────────────────────────
 builder.Services.AddScoped(typeof(IGenericRepository<>),
@@ -176,10 +178,21 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseCors("AllowFrontend");
+app.UseExceptionHandler(appError =>
+{
+    appError.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(
+            new { message = "An unexpected error occurred." });
+    });
+});
+
 
 // Do NOT use UseHttpsRedirection — Railway handles HTTPS at proxy level
 app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

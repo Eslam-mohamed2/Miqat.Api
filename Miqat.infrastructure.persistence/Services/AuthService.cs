@@ -47,6 +47,11 @@ namespace Miqat.infrastructure.persistence.Services
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid email or password.");
 
+            // ✅ ADD THIS
+            if (!user.IsVerified)
+                throw new UnauthorizedAccessException(
+                    "Account is not verified. Please check your email for the OTP.");
+
             if (!user.IsActive)
                 throw new UnauthorizedAccessException("Account is disabled.");
 
@@ -149,82 +154,97 @@ namespace Miqat.infrastructure.persistence.Services
             await _unitOfWork.Repository<OtpCode>().AddAsync(otp);
             await _unitOfWork.CompleteAsync();
 
-            _ = Task.Run(async () =>
+            try
             {
-                try
-                {
-                    await _emailService.SendOtpAsync(user.Email, user.FullName, otpCode);
-                    Console.WriteLine($"[Email] OTP sent to {user.Email}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[Email] Failed: {ex.Message}");
-                    Console.WriteLine($"[Dev OTP] {user.Email} | Code: {otpCode}");
-                }
-            });
+                await _emailService.SendOtpAsync(user.Email, user.FullName, otpCode);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Email] Failed: {ex.Message}");
+                Console.WriteLine($"[Dev OTP] {user.Email} | Code: {otpCode}");
+            }
             return true;
         }
 
         // ── Verify OTP ────────────────────────────────────────────────────────
         public async Task<AuthResponseDto> VerifyOtpAsync(
             VerifyOtpDto request, string ipAddress)
-        {
-            var users = await _unitOfWork.Repository<User>()
-                .FindAsync(u => u.Email == request.Email);
-            var user = users.FirstOrDefault()
-                ?? throw new ApiException("User not found.", 404);
-
-            if (user.IsVerified)
-                throw new ApiException("Account is already verified. Please login.", 400);
-
-            var otps = await _unitOfWork.Repository<OtpCode>()
-                .FindAsync(o =>
-                    o.UserId == user.Id &&
-                    o.Code == request.Code &&
-                    o.Purpose == request.Purpose &&
-                    !o.IsUsed);
-
-            var otp = otps.FirstOrDefault();
-
-            if (otp == null)
-                throw new ApiException(
-                    "Invalid OTP. Please check the code or request a new one.", 400);
-
-            if (otp.IsExpired)
-                throw new ApiException(
-                    "OTP has expired. Please request a new code.", 400);
-
-            otp.MarkAsUsed();
-            _unitOfWork.Repository<OtpCode>().Update(otp);
-
-            user.IsVerified = true;
-            user.SetUpdated();
-            _unitOfWork.Repository<User>().Update(user);
-            await _unitOfWork.CompleteAsync();
-
-            try
             {
-                await _emailService.SendWelcomeAsync(user.Email, user.FullName);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Email] Welcome email failed: {ex.Message}");
-            }
+                // 1. Find user
+                var users = await _unitOfWork.Repository<User>()
+                    .FindAsync(u => u.Email == request.Email);
+                var user = users.FirstOrDefault()
+                    ?? throw new ApiException("User not found.", 404);
 
-            var accessToken = _jwtService.GenerateAccessToken(user);
-            var refreshToken = _jwtService.GenerateRefreshToken();
+                // 2. Default purpose if not provided
+                var purpose = string.IsNullOrWhiteSpace(request.Purpose)
+                    ? "EmailVerification"
+                    : request.Purpose;
 
-            var tokenEntity = new RefreshToken(
-                refreshToken, user.Id,
-                DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays),
-                ipAddress);
+                // 3. Only block re-verification for EmailVerification purpose
+                if (purpose == "EmailVerification" && user.IsVerified)
+                    throw new ApiException("Account is already verified. Please login.", 400);
 
-            await _unitOfWork.Repository<RefreshToken>().AddAsync(tokenEntity);
-            await _unitOfWork.CompleteAsync();
+                // 4. Find a valid (unused) OTP matching email + code + purpose
+                var otps = await _unitOfWork.Repository<OtpCode>()
+                    .FindAsync(o =>
+                        o.UserId == user.Id &&
+                        o.Code == request.Code &&
+                        o.Purpose == purpose &&
+                        !o.IsUsed);
 
-            return BuildAuthResponse(user, accessToken, refreshToken);
+                var otp = otps.FirstOrDefault();
+
+                // 5. Null check first, then expiry check (order matters for clear error messages)
+                if (otp == null)
+                    throw new ApiException(
+                        "Invalid OTP. Please check the code or request a new one.", 400);
+
+                if (otp.IsExpired)
+                    throw new ApiException(
+                        "OTP has expired. Please request a new code.", 400);
+
+                // 6. Mark OTP as used
+                otp.MarkAsUsed();
+                _unitOfWork.Repository<OtpCode>().Update(otp);
+
+                // 7. Only mark user as verified for EmailVerification purpose
+                if (purpose == "EmailVerification")
+                {
+                    user.IsVerified = true;
+                    user.SetUpdated();
+                    _unitOfWork.Repository<User>().Update(user);
+                }
+
+                await _unitOfWork.CompleteAsync();
+
+                // 8. Send welcome email only for EmailVerification
+                if (purpose == "EmailVerification")
+                {
+                    try
+                    {
+                        await _emailService.SendWelcomeAsync(user.Email, user.FullName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[Email] Welcome email failed: {ex.Message}");
+                    }
+                }
+
+                // 9. Generate tokens and return auth response
+                var accessToken = _jwtService.GenerateAccessToken(user);
+                var refreshToken = _jwtService.GenerateRefreshToken();
+
+                var tokenEntity = new RefreshToken(
+                    refreshToken, user.Id,
+                    DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays),
+                    ipAddress);
+
+                await _unitOfWork.Repository<RefreshToken>().AddAsync(tokenEntity);
+                await _unitOfWork.CompleteAsync();
+
+                return BuildAuthResponse(user, accessToken, refreshToken);
         }
-
         // ── Forgot Password ───────────────────────────────────────────────────
         public async Task<bool> ForgotPasswordAsync(string email)
         {
@@ -431,8 +451,10 @@ namespace Miqat.infrastructure.persistence.Services
         // ── Helpers ───────────────────────────────────────────────────────────
         private static string GenerateOtp()
         {
-            var random = new Random();
-            return random.Next(100000, 999999).ToString();
+            var bytes = new byte[4];
+            System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
+            var value = Math.Abs(BitConverter.ToInt32(bytes, 0)) % 900000 + 100000;
+            return value.ToString();
         }
 
         private AuthResponseDto BuildAuthResponse(

@@ -36,6 +36,10 @@ namespace Miqat.API.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
 
         [HttpPost("refresh")]
@@ -52,83 +56,137 @@ namespace Miqat.API.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(
             [FromBody] RefreshTokenRequestDto request)
         {
-            var result = await _authService
-                .LogoutAsync(request.RefreshToken, GetIpAddress());
+            try
+            {
+                var result = await _authService
+                    .LogoutAsync(request.RefreshToken, GetIpAddress());
 
-            return result
-                ? Ok(new { message = "Logged out successfully." })
-                : BadRequest(new { message = "Invalid token." });
+                return result
+                    ? Ok(new { message = "Logged out successfully." })
+                    : BadRequest(new { message = "Invalid token." });
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
         {
-            await _authService.RegisterAsync(request);
-            return Ok(new { message = "Registration successful! Please check your email for the OTP." });
+            try
+            {
+                await _authService.RegisterAsync(request);
+                return Ok(new { message = "Registration successful! Please check your email for the OTP." });
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
 
         [HttpPost("verify-otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto request)
         {
-            var result = await _authService.VerifyOtpAsync(request, GetIpAddress());
-            return Ok(result);
+            try
+            {
+                var result = await _authService.VerifyOtpAsync(request, GetIpAddress());
+                return Ok(result);
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto request)
         {
-            await _authService.ForgotPasswordAsync(request.Email);
-            return Ok(new { message = "If this email exists, a reset link has been sent." });
+            try
+            {
+                await _authService.ForgotPasswordAsync(request.Email);
+                return Ok(new { message = "If this email exists, a reset link has been sent." });
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
         {
-            await _authService.ResetPasswordAsync(request);
-            return Ok(new { message = "Password reset successfully." });
+            try
+            {
+                await _authService.ResetPasswordAsync(request);
+                return Ok(new { message = "Password reset successfully." });
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
 
         [HttpPost("google")]
-        public async Task<IActionResult> GoogleLogin([FromBody] string googleToken)
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto request)
         {
             try
             {
-                var result = await _authService.GoogleLoginAsync(googleToken, GetIpAddress());
+                var result = await _authService.GoogleLoginAsync(request.Token, GetIpAddress());
                 return Ok(result);
             }
             catch (ApiException ex)
             {
-                return Unauthorized(new { message = ex.Message });
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
             }
         }
 
         [HttpPost("resend-otp")]
         public async Task<IActionResult> ResendOtp([FromBody] ResendOtpDto request)
         {
-            await _authService.ResendOtpAsync(request);
-            return Ok(new { message = "New OTP sent! Please check your email." });
+            try
+            {
+                await _authService.ResendOtpAsync(request);
+                return Ok(new { message = "New OTP sent! Please check your email." });
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
 
         [HttpPost("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto request)
         {
-            if (request.NewPassword != request.ConfirmPassword)
-                return BadRequest(new { message = "Passwords do not match." });
+            try
+            {
+                if (request.NewPassword != request.ConfirmPassword)
+                    return BadRequest(new { message = "Passwords do not match." });
 
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            await _authService.ChangePasswordAsync(
-                userId,
-                request.CurrentPassword,
-                request.NewPassword);
+                await _authService.ChangePasswordAsync(
+                    userId,
+                    request.CurrentPassword,
+                    request.NewPassword);
 
-            return Ok(new { message = "Password changed successfully." });
+                return Ok(new { message = "Password changed successfully." });
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
     }
 }

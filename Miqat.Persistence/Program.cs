@@ -197,6 +197,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 // ── Port Binding for Railway ──────────────────────────────────────────────────
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-Console.WriteLine($"[Startup] Starting on port {port}");
-app.Run($"http://0.0.0.0:{port}");
+var port = Environment.GetEnvironmentVariable("PORT");
+if (port != null)
+    app.Run($"http://0.0.0.0:{port}");
+else
+    app.Run();

@@ -204,4 +204,4 @@ app.MapControllers();
 // ── Port Binding for Railway ──────────────────────────────────────────────────
 // ── Port Binding (Works for Azure, Railway, and Local) ────────────────────────
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-app.Run(port.Contains("http") ? port : $"http://0.0.0.0:{port}");
+app.Run();  

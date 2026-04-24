@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Miqat.Application.Common;
 using Miqat.Application.Interfaces;
 using sib_api_v3_sdk.Api;
@@ -7,12 +6,8 @@ using sib_api_v3_sdk.Client;
 using sib_api_v3_sdk.Model;
 using MimeKit;
 using MailKit.Security;
-using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using Task = System.Threading.Tasks.Task;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Miqat.infrastructure.persistence.Services
 {

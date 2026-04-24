@@ -407,12 +407,17 @@ namespace Miqat.infrastructure.persistence.Services
             var payload = await VerifyGoogleTokenAsync(googleToken)
                 ?? throw new ApiException("Invalid Google token.", 401);
 
+            // Make sure Google confirms the email ownership
+            if (payload.EmailVerified != true)
+                throw new ApiException("Google account email is not verified.", 401);
+
             var users = await _unitOfWork.Repository<User>()
                 .FindAsync(u => u.Email == payload.Email);
             var user = users.FirstOrDefault();
 
             if (user == null)
             {
+                // Create a new user for this Google account. Do not set a usable password.
                 user = new User(
                     payload.Name ?? payload.Email,
                     payload.Email,
@@ -424,11 +429,43 @@ namespace Miqat.infrastructure.persistence.Services
                 user.IsVerified = true;
                 user.IsActive = true;
                 user.ProfilePictureUrl = payload.Picture;
-                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(
-                    Guid.NewGuid().ToString());
 
                 await _unitOfWork.Repository<User>().AddAsync(user);
-                await _unitOfWork.CompleteAsync();
+            }
+            else
+            {
+                // If an existing user logs in with Google, link their account
+                // to the Google identity and ensure the account is verified.
+                var updated = false;
+                if (!user.IsGoogleAccount)
+                {
+                    user.IsGoogleAccount = true;
+                    updated = true;
+                }
+
+                if (string.IsNullOrEmpty(user.GoogleId) && !string.IsNullOrEmpty(payload.Subject))
+                {
+                    user.GoogleId = payload.Subject;
+                    updated = true;
+                }
+
+                if (!user.IsVerified)
+                {
+                    user.IsVerified = true;
+                    updated = true;
+                }
+
+                if (!string.IsNullOrEmpty(payload.Picture) && user.ProfilePictureUrl != payload.Picture)
+                {
+                    user.ProfilePictureUrl = payload.Picture;
+                    updated = true;
+                }
+
+                if (updated)
+                {
+                    user.SetUpdated();
+                    _unitOfWork.Repository<User>().Update(user);
+                }
             }
 
             if (!user.IsActive)

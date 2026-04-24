@@ -144,31 +144,36 @@ builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 // ─────────────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-// ── Auto Migrate ──────────────────────────────────────────────────────────────
+// ── Auto Migrate + Seeder (Smart Run) ─────────────────────────────────────────
 try
 {
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<MiqatDbContext>();
-    db.Database.Migrate();
-    Console.WriteLine("[Migration] ✅ Database migrated successfully.");
+    // Use a single scope for migration + conditional seeding
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<MiqatDbContext>();
+
+        // Apply migrations asynchronously
+        await db.Database.MigrateAsync();
+        Console.WriteLine("[Migration] ✅ Database migrated successfully.");
+
+        // If DB is empty (no users), run seeders
+        if (!await db.Users.AnyAsync())
+        {
+            Console.WriteLine("[Seeder] 🔄 Database empty. Running seeders...");
+            var seeder = scope.ServiceProvider.GetRequiredService<SeederRunner>();
+            await seeder.RunAllAsync();
+            Console.WriteLine("[Seeder] ✅ Data seeded successfully.");
+        }
+        else
+        {
+            Console.WriteLine("[Seeder] ℹ️ Data already exists. Skipping seeders.");
+        }
+    }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"[Migration] ❌ Failed: {ex.Message}");
+    Console.WriteLine($"[Migration/Seeder] ❌ Failed: {ex.Message}");
 }
-
-// ── Seeder ────────────────────────────────────────────────────────────────────
-try
-{
-    using var scope = app.Services.CreateScope();
-    var seeder = scope.ServiceProvider.GetRequiredService<SeederRunner>();
-    await seeder.RunAllAsync();
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"[Seeder] ❌ Failed: {ex.Message}");
-}
-
 // ── Middleware Pipeline ───────────────────────────────────────────────────────
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -197,8 +202,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 // ── Port Binding for Railway ──────────────────────────────────────────────────
-var port = Environment.GetEnvironmentVariable("PORT");
-if (port != null)
-    app.Run($"http://0.0.0.0:{port}");
-else
-    app.Run();
+// ── Port Binding (Works for Azure, Railway, and Local) ────────────────────────
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Run(port.Contains("http") ? port : $"http://0.0.0.0:{port}");

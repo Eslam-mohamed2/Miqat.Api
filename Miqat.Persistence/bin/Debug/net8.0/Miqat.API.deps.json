@@ -26,14 +26,6 @@
           }
         }
       },
-      "BouncyCastle.Cryptography/2.2.1": {
-        "runtime": {
-          "lib/net6.0/BouncyCastle.Cryptography.dll": {
-            "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.2.1.47552"
-          }
-        }
-      },
       "FluentValidation/11.9.0": {
         "runtime": {
           "lib/net8.0/FluentValidation.dll": {
@@ -63,6 +55,28 @@
           "lib/netstandard2.1/FluentValidation.DependencyInjectionExtensions.dll": {
             "assemblyVersion": "11.0.0.0",
             "fileVersion": "11.5.1.0"
+          }
+        }
+      },
+      "FubarCoder.RestSharp.Portable.Core/4.0.8": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/netstandard1.3/FubarCoder.RestSharp.Portable.Core.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.8.0"
+          }
+        }
+      },
+      "FubarCoder.RestSharp.Portable.HttpClient/4.0.8": {
+        "dependencies": {
+          "FubarCoder.RestSharp.Portable.Core": "4.0.8"
+        },
+        "runtime": {
+          "lib/netstandard1.1/FubarCoder.RestSharp.Portable.HttpClient.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.8.0"
           }
         }
       },
@@ -109,14 +123,25 @@
           }
         }
       },
-      "MailKit/4.3.0": {
+      "JsonSubTypes/2.0.1": {
         "dependencies": {
-          "MimeKit": "4.3.0"
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/JsonSubTypes.dll": {
+            "assemblyVersion": "2.0.1.0",
+            "fileVersion": "2.0.1.0"
+          }
+        }
+      },
+      "MailKit/3.5.0": {
+        "dependencies": {
+          "MimeKit": "3.5.0"
         },
         "runtime": {
           "lib/net6.0/MailKit.dll": {
-            "assemblyVersion": "4.3.0.0",
-            "fileVersion": "4.3.0.0"
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
           }
         }
       },
@@ -545,14 +570,14 @@
           }
         }
       },
-      "MimeKit/4.3.0": {
+      "MimeKit/3.5.0": {
         "dependencies": {
-          "BouncyCastle.Cryptography": "2.2.1"
+          "Portable.BouncyCastle": "1.9.0"
         },
         "runtime": {
           "lib/net6.0/MimeKit.dll": {
-            "assemblyVersion": "4.3.0.0",
-            "fileVersion": "4.3.0.0"
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
           }
         }
       },
@@ -600,11 +625,33 @@
           }
         }
       },
+      "Portable.BouncyCastle/1.9.0": {
+        "runtime": {
+          "lib/netstandard2.0/BouncyCastle.Crypto.dll": {
+            "assemblyVersion": "1.9.0.0",
+            "fileVersion": "1.9.0.1"
+          }
+        }
+      },
       "Riok.Mapperly/4.3.1": {
         "runtime": {
           "lib/netstandard2.0/Riok.Mapperly.Abstractions.dll": {
             "assemblyVersion": "4.3.1.0",
             "fileVersion": "4.3.1.0"
+          }
+        }
+      },
+      "sib_api_v3_sdk/4.0.2": {
+        "dependencies": {
+          "FubarCoder.RestSharp.Portable.Core": "4.0.8",
+          "FubarCoder.RestSharp.Portable.HttpClient": "4.0.8",
+          "JsonSubTypes": "2.0.1",
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/sib_api_v3_sdk.dll": {
+            "assemblyVersion": "4.0.2.0",
+            "fileVersion": "4.0.2.0"
           }
         }
       },
@@ -770,12 +817,13 @@
         "dependencies": {
           "BCrypt.Net-Next": "4.0.3",
           "Google.Apis.Auth": "1.68.0",
-          "MailKit": "4.3.0",
+          "MailKit": "3.5.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.23",
           "Microsoft.EntityFrameworkCore": "8.0.23",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.23",
           "Miqat.Application": "1.0.0",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.8"
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.8",
+          "sib_api_v3_sdk": "4.0.2"
         },
         "runtime": {
           "Miqat.infrastructure.persistence.dll": {
@@ -799,13 +847,6 @@
       "path": "bcrypt.net-next/4.0.3",
       "hashPath": "bcrypt.net-next.4.0.3.nupkg.sha512"
     },
-    "BouncyCastle.Cryptography/2.2.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-A6Zr52zVqJKt18ZBsTnX0qhG0kwIQftVAjLmszmkiR/trSp8H+xj1gUOzk7XHwaKgyREMSV1v9XaKrBUeIOdvQ==",
-      "path": "bouncycastle.cryptography/2.2.1",
-      "hashPath": "bouncycastle.cryptography.2.2.1.nupkg.sha512"
-    },
     "FluentValidation/11.9.0": {
       "type": "package",
       "serviceable": true,
@@ -826,6 +867,20 @@
       "sha512": "sha512-iWM0LS1MDYX06pcjMEQKqHirl2zkjHlNV23mEJSoR1IZI7KQmTa0RcTtGEJpj5+iHvBCfrzP2mYKM4FtRKVb+A==",
       "path": "fluentvalidation.dependencyinjectionextensions/11.5.1",
       "hashPath": "fluentvalidation.dependencyinjectionextensions.11.5.1.nupkg.sha512"
+    },
+    "FubarCoder.RestSharp.Portable.Core/4.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-OELVey64TaGRfBmDamG8GCS9sB3tpDOpNBRW2Aoy+Bk1OyDMT3PKSt6s7VuB7Jz4MA2Ut2Pe4v6vYJUArMk1Gw==",
+      "path": "fubarcoder.restsharp.portable.core/4.0.8",
+      "hashPath": "fubarcoder.restsharp.portable.core.4.0.8.nupkg.sha512"
+    },
+    "FubarCoder.RestSharp.Portable.HttpClient/4.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-h6pTAjqkQW0j6lPm/gsxTMXBvx2Fbe6crZr+jpNgWOKs25S5umYngoJULAvo5YyBFvvN4v7CmCGZhFMWzxS8Ig==",
+      "path": "fubarcoder.restsharp.portable.httpclient/4.0.8",
+      "hashPath": "fubarcoder.restsharp.portable.httpclient.4.0.8.nupkg.sha512"
     },
     "Google.Apis/1.68.0": {
       "type": "package",
@@ -855,12 +910,19 @@
       "path": "humanizer.core/2.14.1",
       "hashPath": "humanizer.core.2.14.1.nupkg.sha512"
     },
-    "MailKit/4.3.0": {
+    "JsonSubTypes/2.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-jVmB3Nr0JpqhyMiXOGWMin+QvRKpucGpSFBCav9dG6jEJPdBV+yp1RHVpKzxZPfT+0adaBuZlMFdbIciZo1EWA==",
-      "path": "mailkit/4.3.0",
-      "hashPath": "mailkit.4.3.0.nupkg.sha512"
+      "sha512": "sha512-1Po+Ypf0SjCeEKx5+C89Nb5OgTcqNvfS3uTI46MUM+KEp6Rq/M0h+vVsTUt/6DFRwZMTpsAJM4yJrZmEObVANA==",
+      "path": "jsonsubtypes/2.0.1",
+      "hashPath": "jsonsubtypes.2.0.1.nupkg.sha512"
+    },
+    "MailKit/3.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7tvc+Um6JWOgvAv4I7DhPEDbHVaRH06m1ECZoJw2n9cyBcCZbyZy4AhVhTxGjM/vFYogh+UDboOnn7xd7WRV1Q==",
+      "path": "mailkit/3.5.0",
+      "hashPath": "mailkit.3.5.0.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.23": {
       "type": "package",
@@ -1030,12 +1092,12 @@
       "path": "microsoft.openapi/1.6.14",
       "hashPath": "microsoft.openapi.1.6.14.nupkg.sha512"
     },
-    "MimeKit/4.3.0": {
+    "MimeKit/3.5.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-39KDXuERDy5VmHIn7NnCWvIVp/Ar4qnxZWg9m06DfRqDbW1B6zFv9o3Tdoa4CCu71tE/0SRqRCN5Z+bbffw6uw==",
-      "path": "mimekit/4.3.0",
-      "hashPath": "mimekit.4.3.0.nupkg.sha512"
+      "sha512": "sha512-XHRxnUJjNC6ufN94Yixp0QaLAZL+4L3huwzBhG5grBn68FQo3lH24gHKl15ceK4ktsALTqxdKPc/iMbQ442CGA==",
+      "path": "mimekit/3.5.0",
+      "hashPath": "mimekit.3.5.0.nupkg.sha512"
     },
     "Mono.TextTemplating/2.2.1": {
       "type": "package",
@@ -1065,12 +1127,26 @@
       "path": "npgsql.entityframeworkcore.postgresql/8.0.8",
       "hashPath": "npgsql.entityframeworkcore.postgresql.8.0.8.nupkg.sha512"
     },
+    "Portable.BouncyCastle/1.9.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-eZZBCABzVOek+id9Xy04HhmgykF0wZg9wpByzrWN7q8qEI0Qen9b7tfd7w8VA3dOeesumMG7C5ZPy0jk7PSRHw==",
+      "path": "portable.bouncycastle/1.9.0",
+      "hashPath": "portable.bouncycastle.1.9.0.nupkg.sha512"
+    },
     "Riok.Mapperly/4.3.1": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-oSE+OVLHyiojrws0QVbQaAT2YKsYbyHqJXPdV7EhGseR/dYgeWS2x1T5qY5I4E+RJkJqMSG+FyZOq4SljWgJWQ==",
       "path": "riok.mapperly/4.3.1",
       "hashPath": "riok.mapperly.4.3.1.nupkg.sha512"
+    },
+    "sib_api_v3_sdk/4.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/N2fTdzNelHhwuyyvOqXCm6DZgJlXNjw0nCKOQddAQnUXrgt6ozrFMtcpRVrrIQU0RC3fU0ZzYrr1xeZ4S857g==",
+      "path": "sib_api_v3_sdk/4.0.2",
+      "hashPath": "sib_api_v3_sdk.4.0.2.nupkg.sha512"
     },
     "Swashbuckle.AspNetCore/6.6.2": {
       "type": "package",

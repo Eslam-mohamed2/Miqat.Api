@@ -5,6 +5,10 @@ using Miqat.Application.Interfaces;
 using sib_api_v3_sdk.Api;
 using sib_api_v3_sdk.Client;
 using sib_api_v3_sdk.Model;
+using MimeKit;
+using MailKit.Security;
+using MailKit.Net.Smtp;
+using Microsoft.Extensions.Logging;
 using Task = System.Threading.Tasks.Task;
 using System;
 using System.Collections.Generic;
@@ -17,12 +21,18 @@ namespace Miqat.infrastructure.persistence.Services
         private readonly EmailSettings _settings;
         private readonly string _primaryColor = "#4F46E5"; // Deep Indigo (Modern SaaS Look)
         private readonly string _backgroundColor = "#F9FAFB";
+        private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IOptions<EmailSettings> settings)
+        public EmailService(IOptions<EmailSettings> settings, ILogger<EmailService> logger)
         {
             _settings = settings.Value;
-            // إعداد مفتاح Brevo API
-            Configuration.Default.ApiKey["api-key"] = _settings.ApiKey;
+            _logger = logger;
+
+            // Configure Brevo API key only when provided.
+            if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
+            {
+                Configuration.Default.ApiKey["api-key"] = _settings.ApiKey;
+            }
         }
 
         public async Task SendOtpAsync(string toEmail, string fullName, string otp)
@@ -149,22 +159,94 @@ namespace Miqat.infrastructure.persistence.Services
 
         private async Task SendEmailAsync(string toEmail, string toName, string subject, string htmlBody, string? textBody = null)
         {
-            var apiInstance = new TransactionalEmailsApi();
-            var sender = new SendSmtpEmailSender(_settings.FromName, _settings.FromEmail);
-            var receiver = new SendSmtpEmailTo(toEmail, toName);
-            var sendSmtpEmail = new SendSmtpEmail(sender, new List<SendSmtpEmailTo> { receiver }, null, null, htmlBody, textBody, subject);
+            // Priority: if SMTP settings are provided, use MailKit/SMTP (more deployment-friendly).
+            if (!string.IsNullOrWhiteSpace(_settings.SmtpHost))
+            {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromEmail));
+                message.To.Add(new MailboxAddress(toName, toEmail));
+                message.Subject = subject ?? string.Empty;
 
-            try
-            {
-                // The Brevo / sib_api_v3_sdk TransactionalEmailsApi exposes SendTransacEmailAsync
-                // (CreatePostAsync is not available on the generated client used here).
-                await apiInstance.SendTransacEmailAsync(sendSmtpEmail);
+                var builder = new BodyBuilder();
+                if (!string.IsNullOrEmpty(textBody)) builder.TextBody = textBody;
+                if (!string.IsNullOrEmpty(htmlBody)) builder.HtmlBody = htmlBody;
+                message.Body = builder.ToMessageBody();
+
+                int attempts = 0;
+                const int maxAttempts = 3;
+                while (true)
+                {
+                    attempts++;
+                    using var client = new MailKit.Net.Smtp.SmtpClient();
+                    try
+                    {
+                        var secureSocket = _settings.SmtpUseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTlsWhenAvailable;
+                        await client.ConnectAsync(_settings.SmtpHost, _settings.SmtpPort, secureSocket);
+
+                        if (!string.IsNullOrWhiteSpace(_settings.SmtpUsername))
+                        {
+                            await client.AuthenticateAsync(_settings.SmtpUsername, _settings.SmtpPassword);
+                        }
+
+                        await client.SendAsync(message);
+                        await client.DisconnectAsync(true);
+                        _logger.LogInformation("Email sent to {Email} via SMTP on attempt {Attempt}", toEmail, attempts);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "SMTP send attempt {Attempt} failed for {Email}", attempts, toEmail);
+                        if (attempts >= maxAttempts)
+                        {
+                            _logger.LogError(ex, "SMTP send failed after {Attempts} attempts for {Email}", attempts, toEmail);
+                            throw;
+                        }
+
+                        // Exponential backoff
+                        await Task.Delay(1000 * (int)Math.Pow(2, attempts));
+                    }
+                }
+
+                return;
             }
-            catch (Exception ex)
+
+            // Fallback to Brevo / Sendinblue API if API key provided
+            if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
             {
-                Console.WriteLine($"[Brevo API Error]: {ex.Message}");
-                throw;
+                int attempts = 0;
+                const int maxAttempts = 3;
+                while (true)
+                {
+                    attempts++;
+                    var apiInstance = new TransactionalEmailsApi();
+                    var sender = new SendSmtpEmailSender(_settings.FromName, _settings.FromEmail);
+                    var receiver = new SendSmtpEmailTo(toEmail, toName);
+                    var sendSmtpEmail = new SendSmtpEmail(sender, new List<SendSmtpEmailTo> { receiver }, null, null, htmlBody, textBody, subject);
+
+                    try
+                    {
+                        await apiInstance.SendTransacEmailAsync(sendSmtpEmail);
+                        _logger.LogInformation("Email sent to {Email} via Brevo on attempt {Attempt}", toEmail, attempts);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Brevo send attempt {Attempt} failed for {Email}", attempts, toEmail);
+                        if (attempts >= maxAttempts)
+                        {
+                            _logger.LogError(ex, "Brevo send failed after {Attempts} attempts for {Email}", attempts, toEmail);
+                            throw;
+                        }
+
+                        await Task.Delay(1000 * (int)Math.Pow(2, attempts));
+                    }
+                }
+
+                return;
             }
+
+            _logger.LogError("No email provider configured. Set SMTP settings or ApiKey in EmailSettings.");
+            throw new InvalidOperationException("No email provider configured. Set SMTP settings or ApiKey in EmailSettings.");
         }
     }
 }

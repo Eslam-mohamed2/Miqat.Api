@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "fjdSr9w6Mqs=",
+  "dgSpecHash": "ZifnJ3x5ZOU=",
   "success": true,
   "projectFilePath": "E:\\Projects\\Miqat\\Miqat.infrastructure.persistence\\Miqat.infrastructure.persistence.csproj",
   "expectedPackageFiles": [
@@ -15,6 +15,7 @@
     "C:\\Users\\Eslam\\.nuget\\packages\\google.apis.core\\1.68.0\\google.apis.core.1.68.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\jsonsubtypes\\2.0.1\\jsonsubtypes.2.0.1.nupkg.sha512",
+    "C:\\Users\\Eslam\\.nuget\\packages\\mailkit\\3.5.0\\mailkit.3.5.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.23\\microsoft.aspnetcore.authentication.jwtbearer.8.0.23.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\3.3.3\\microsoft.codeanalysis.analyzers.3.3.3.nupkg.sha512",
@@ -48,11 +49,13 @@
     "C:\\Users\\Eslam\\.nuget\\packages\\microsoft.netcore.platforms\\1.0.1\\microsoft.netcore.platforms.1.0.1.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\microsoft.netcore.targets\\1.0.1\\microsoft.netcore.targets.1.0.1.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\microsoft.win32.primitives\\4.0.1\\microsoft.win32.primitives.4.0.1.nupkg.sha512",
+    "C:\\Users\\Eslam\\.nuget\\packages\\mimekit\\3.5.0\\mimekit.3.5.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\mono.texttemplating\\2.2.1\\mono.texttemplating.2.2.1.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\netstandard.library\\1.6.0\\netstandard.library.1.6.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\npgsql\\8.0.4\\npgsql.8.0.4.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\8.0.8\\npgsql.entityframeworkcore.postgresql.8.0.8.nupkg.sha512",
+    "C:\\Users\\Eslam\\.nuget\\packages\\portable.bouncycastle\\1.9.0\\portable.bouncycastle.1.9.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\riok.mapperly\\4.3.1\\riok.mapperly.4.3.1.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\runtime.native.system\\4.0.0\\runtime.native.system.4.0.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\runtime.native.system.io.compression\\4.1.0\\runtime.native.system.io.compression.4.1.0.nupkg.sha512",
@@ -76,6 +79,7 @@
     "C:\\Users\\Eslam\\.nuget\\packages\\system.diagnostics.diagnosticsource\\4.0.0\\system.diagnostics.diagnosticsource.4.0.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.diagnostics.tools\\4.0.1\\system.diagnostics.tools.4.0.1.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.diagnostics.tracing\\4.1.0\\system.diagnostics.tracing.4.1.0.nupkg.sha512",
+    "C:\\Users\\Eslam\\.nuget\\packages\\system.formats.asn1\\6.0.0\\system.formats.asn1.6.0.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.globalization\\4.0.11\\system.globalization.4.0.11.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.globalization.calendars\\4.0.1\\system.globalization.calendars.4.0.1.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.globalization.extensions\\4.0.1\\system.globalization.extensions.4.0.1.nupkg.sha512",
@@ -119,6 +123,7 @@
     "C:\\Users\\Eslam\\.nuget\\packages\\system.security.cryptography.csp\\4.0.0\\system.security.cryptography.csp.4.0.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.security.cryptography.encoding\\4.0.0\\system.security.cryptography.encoding.4.0.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.security.cryptography.openssl\\4.0.0\\system.security.cryptography.openssl.4.0.0.nupkg.sha512",
+    "C:\\Users\\Eslam\\.nuget\\packages\\system.security.cryptography.pkcs\\6.0.0\\system.security.cryptography.pkcs.6.0.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.security.cryptography.primitives\\4.0.0\\system.security.cryptography.primitives.4.0.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.security.cryptography.x509certificates\\4.1.0\\system.security.cryptography.x509certificates.4.1.0.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.text.encoding\\4.0.11\\system.text.encoding.4.0.11.nupkg.sha512",
@@ -135,5 +140,18 @@
     "C:\\Users\\Eslam\\.nuget\\packages\\system.xml.xmldocument\\4.0.1\\system.xml.xmldocument.4.0.1.nupkg.sha512",
     "C:\\Users\\Eslam\\.nuget\\packages\\system.xml.xmlserializer\\4.0.11\\system.xml.xmlserializer.4.0.11.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "message": "Package 'MailKit' 3.5.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-9j88-vvj5-vhgr",
+      "projectPath": "E:\\Projects\\Miqat\\Miqat.infrastructure.persistence\\Miqat.infrastructure.persistence.csproj",
+      "warningLevel": 1,
+      "filePath": "E:\\Projects\\Miqat\\Miqat.infrastructure.persistence\\Miqat.infrastructure.persistence.csproj",
+      "libraryId": "MailKit",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

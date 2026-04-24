@@ -10,6 +10,7 @@
         "dependencies": {
           "BCrypt.Net-Next": "4.0.3",
           "Google.Apis.Auth": "1.68.0",
+          "MailKit": "3.5.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.23",
           "Microsoft.EntityFrameworkCore": "8.0.23",
           "Microsoft.EntityFrameworkCore.Design": "8.0.23",
@@ -135,6 +136,17 @@
           "lib/netstandard2.0/JsonSubTypes.dll": {
             "assemblyVersion": "2.0.1.0",
             "fileVersion": "2.0.1.0"
+          }
+        }
+      },
+      "MailKit/3.5.0": {
+        "dependencies": {
+          "MimeKit": "3.5.0"
+        },
+        "runtime": {
+          "lib/net6.0/MailKit.dll": {
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
           }
         }
       },
@@ -555,6 +567,17 @@
           }
         }
       },
+      "MimeKit/3.5.0": {
+        "dependencies": {
+          "Portable.BouncyCastle": "1.9.0"
+        },
+        "runtime": {
+          "lib/net6.0/MimeKit.dll": {
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
+          }
+        }
+      },
       "Mono.TextTemplating/2.2.1": {
         "dependencies": {
           "System.CodeDom": "7.0.0"
@@ -596,6 +619,14 @@
           "lib/net8.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
             "assemblyVersion": "8.0.8.0",
             "fileVersion": "8.0.8.0"
+          }
+        }
+      },
+      "Portable.BouncyCastle/1.9.0": {
+        "runtime": {
+          "lib/netstandard2.0/BouncyCastle.Crypto.dll": {
+            "assemblyVersion": "1.9.0.0",
+            "fileVersion": "1.9.0.1"
           }
         }
       },
@@ -827,6 +858,13 @@
       "path": "jsonsubtypes/2.0.1",
       "hashPath": "jsonsubtypes.2.0.1.nupkg.sha512"
     },
+    "MailKit/3.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7tvc+Um6JWOgvAv4I7DhPEDbHVaRH06m1ECZoJw2n9cyBcCZbyZy4AhVhTxGjM/vFYogh+UDboOnn7xd7WRV1Q==",
+      "path": "mailkit/3.5.0",
+      "hashPath": "mailkit.3.5.0.nupkg.sha512"
+    },
     "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.23": {
       "type": "package",
       "serviceable": true,
@@ -988,6 +1026,13 @@
       "path": "microsoft.identitymodel.tokens/7.1.2",
       "hashPath": "microsoft.identitymodel.tokens.7.1.2.nupkg.sha512"
     },
+    "MimeKit/3.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XHRxnUJjNC6ufN94Yixp0QaLAZL+4L3huwzBhG5grBn68FQo3lH24gHKl15ceK4ktsALTqxdKPc/iMbQ442CGA==",
+      "path": "mimekit/3.5.0",
+      "hashPath": "mimekit.3.5.0.nupkg.sha512"
+    },
     "Mono.TextTemplating/2.2.1": {
       "type": "package",
       "serviceable": true,
@@ -1015,6 +1060,13 @@
       "sha512": "sha512-D5WWJZJTgZYUmGv66BARXbTlinp2a5f5RueJqGYoHuWJw02J0i2va/RA+8N4A5hLORK5YKMRqXhFWtKsZdrksw==",
       "path": "npgsql.entityframeworkcore.postgresql/8.0.8",
       "hashPath": "npgsql.entityframeworkcore.postgresql.8.0.8.nupkg.sha512"
+    },
+    "Portable.BouncyCastle/1.9.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-eZZBCABzVOek+id9Xy04HhmgykF0wZg9wpByzrWN7q8qEI0Qen9b7tfd7w8VA3dOeesumMG7C5ZPy0jk7PSRHw==",
+      "path": "portable.bouncycastle/1.9.0",
+      "hashPath": "portable.bouncycastle.1.9.0.nupkg.sha512"
     },
     "Riok.Mapperly/4.3.1": {
       "type": "package",

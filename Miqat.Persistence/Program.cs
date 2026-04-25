@@ -59,8 +59,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
         policy.WithOrigins(
+            "https://mqiatsmartcalendar.vercel.app",
             "https://miqatsmartcalendar.vercel.app",
             "https://miqat.vercel.app",
+            "https://mqiat-git-main-eslams-projects-b9cff232.vercel.app",
+            "https://mqiat-cyz22sp5z-eslams-projects-b9cff232.vercel.app",
             "http://localhost:3000",
             "http://localhost:4200",
             "https://localhost:7000")
@@ -68,7 +71,6 @@ builder.Services.AddCors(options =>
         .AllowAnyMethod()
         .AllowCredentials());
 });
-
 // ── Repositories & UoW ───────────────────────────────────────────────────────
 builder.Services.AddScoped(typeof(IGenericRepository<>),
     typeof(GenericRepository<>));

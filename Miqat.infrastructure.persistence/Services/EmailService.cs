@@ -52,12 +52,12 @@ namespace Miqat.infrastructure.persistence.Services
             var contentHtml = $@"
                 <p style='font-size: 16px; color: #374151;'>We're thrilled to have you here! Your account is now verified and ready to go.</p>
                 <div style='text-align: center; margin: 32px 0;'>
-                    <a href='https://miqat.vercel.app' style='background: {_primaryColor}; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;'>Go to Dashboard</a>
+                    <a href='https://mqiatsmartcalendar.vercel.app/dashboard' style='background: {_primaryColor}; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;'>Go to Dashboard</a>
                 </div>
                 <p style='font-size: 16px; color: #374151;'>Start organizing your life with Miqat's smart calendar today.</p>";
 
             var html = GetBaseTemplate(fullName, contentHtml, "Welcome to Miqat — get started with your smart calendar.");
-            var text = GetPlainTextTemplate(fullName, "Welcome to Miqat! Visit https://miqat.vercel.app to get started.");
+            var text = GetPlainTextTemplate(fullName, "Welcome to Miqat! Visit https://mqiatsmartcalendar.vercel.app/dashboard to get started.");
 
             await SendEmailAsync(toEmail, fullName, subject, html, text);
         }

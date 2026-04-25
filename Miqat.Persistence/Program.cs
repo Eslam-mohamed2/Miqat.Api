@@ -147,16 +147,13 @@ var app = builder.Build();
 // ── Auto Migrate + Seeder (Smart Run) ─────────────────────────────────────────
 try
 {
-    // Use a single scope for migration + conditional seeding
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<MiqatDbContext>();
 
-        // Apply migrations asynchronously
         await db.Database.MigrateAsync();
         Console.WriteLine("[Migration] ✅ Database migrated successfully.");
 
-        // If DB is empty (no users), run seeders
         if (!await db.Users.AnyAsync())
         {
             Console.WriteLine("[Seeder] 🔄 Database empty. Running seeders...");
@@ -174,6 +171,7 @@ catch (Exception ex)
 {
     Console.WriteLine($"[Migration/Seeder] ❌ Failed: {ex.Message}");
 }
+
 // ── Middleware Pipeline ───────────────────────────────────────────────────────
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -182,26 +180,15 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-// ✅ CORS is now FIRST — before all other middleware
+// ✅ CORS first — before all other middleware
 app.UseCors("AllowFrontend");
 
-app.UseExceptionHandler(appError =>
-{
-    appError.Run(async context =>
-    {
-        context.Response.StatusCode = 500;
-        context.Response.ContentType = "application/json";
-        await context.Response.WriteAsJsonAsync(
-            new { message = "An unexpected error occurred." });
-    });
-});
-
+// ✅ Single exception handler — removed duplicate app.UseExceptionHandler
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// ── Port Binding for Railway ──────────────────────────────────────────────────
-// ── Port Binding (Works for Azure, Railway, and Local) ────────────────────────
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-app.Run();  
+app.Run();

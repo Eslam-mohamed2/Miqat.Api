@@ -40,8 +40,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "googleToken",
-        "Type": "System.String",
+        "Name": "request",
+        "Type": "Miqat.Application.Modules.GoogleLoginDto",
         "IsRequired": true
       }
     ],
@@ -181,6 +181,32 @@
         "Name": "dto",
         "Type": "Miqat.Application.Modules.GroupDto",
         "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Miqat.API.Controllers.GroupController",
+    "Method": "GetMembers",
+    "RelativePath": "api/Group/{groupId}/members",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "groupId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageIndex",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

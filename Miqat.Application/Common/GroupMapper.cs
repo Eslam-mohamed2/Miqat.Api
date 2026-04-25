@@ -16,6 +16,8 @@ public partial class GroupMapper
     {
         var dto = MapToDtoInternal(group);
         dto.OwnerName = group.Owner?.FullName;
+        dto.MemberCount = group.Members?.Count ?? 0;
+        dto.TaskCount = group.Tasks?.Count ?? 0;
         return dto;
     }
 

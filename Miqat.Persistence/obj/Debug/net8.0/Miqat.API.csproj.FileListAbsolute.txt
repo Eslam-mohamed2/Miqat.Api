@@ -289,6 +289,7 @@ E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\staticwebassets.build.json.
 E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\staticwebassets.development.json
 E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\swae.build.ex.cache
+E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\Miqat.API.csproj.Up2Date
 E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\Miqat.API.dll
 E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\refint\Miqat.API.dll

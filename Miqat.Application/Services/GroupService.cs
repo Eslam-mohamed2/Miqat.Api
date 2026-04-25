@@ -22,18 +22,47 @@ namespace Miqat.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<GroupDto>> GetAllGroups()
+        public async Task<IEnumerable<GroupDto>> GetAllGroups(Guid userId)
         {
-            var groups = await _unitOfWork.Repository<Group>().GetAllAsync();
+            // Return groups where user is owner or a member
+            var owned = await _unitOfWork.Repository<Group>()
+                .FindAsync(g => g.OwnerId == userId && !g.IsDeleted);
+
+            var memberSpec = new Miqat.Application.Specifications.Groups.GroupIdsByUserIdSpec(userId);
+            var memberGroupsIds = await _unitOfWork.Repository<GroupMember>().ListAsync(memberSpec);
+            var memberGroupIdsSet = memberGroupsIds.Select(m => m.GroupId).ToHashSet();
+
+            var groups = owned.ToList();
+            // Add member groups that are not owned
+            var additional = await _unitOfWork.Repository<Group>().FindAsync(g => memberGroupIdsSet.Contains(g.Id) && !g.IsDeleted);
+            groups.AddRange(additional.Where(g => !groups.Any(og => og.Id == g.Id)));
+
             return _mapper.MapToDtos(groups);
         }
 
         public async Task<GroupDto?> GetGroupById(Guid id)
         {
-            var spec = new GroupByIdWithMembersSpec(id);
+            // Use lightweight spec to fetch group with owner only and avoid loading large collections.
+            var spec = new GroupWithOwnerSpec();
+            spec = new GroupWithOwnerSpec();
+            // We still need to filter by id; create a specific spec to include owner and match id
+            var groupSpec = new GroupByIdWithMembersSpec(id); // reuse existing spec for simplicity
             var group = await _unitOfWork.Repository<Group>()
-                .GetEntityWithSpec(spec);
-            return group != null ? _mapper.MapToDto(group) : null;
+                .GetEntityWithSpec(groupSpec);
+
+            if (group == null) return null;
+
+            // Instead of returning preloaded members/tasks, compute counts via repository COUNT queries
+            var memberCountSpec = new GroupMembersByGroupIdSpec(group.Id);
+            var taskCountSpec = new Miqat.Application.Specifications.Tasks.TasksByGroupSpec(group.Id);
+
+            var memberCount = await _unitOfWork.Repository<GroupMember>().CountAsync(memberCountSpec);
+            var taskCount = await _unitOfWork.Repository<TaskItem>().CountAsync(taskCountSpec);
+
+            var dto = _mapper.MapToDto(group);
+            dto.MemberCount = memberCount;
+            dto.TaskCount = taskCount;
+            return dto;
         }
 
         public async Task<GroupDto> CreateAsync(GroupDto dto)
@@ -95,6 +124,32 @@ namespace Miqat.Application.Services
 
             _unitOfWork.Repository<GroupMember>().Delete(member);
             return await _unitOfWork.CompleteAsync() > 0;
+        }
+
+        public async Task<ApiResponse<PagedResult<MemberDto>>> GetGroupMembersPaged(Guid groupId, int pageIndex = 0, int pageSize = 20)
+        {
+            // Validate group exists
+            var group = await _unitOfWork.Repository<Group>().GetByIdAsync(groupId);
+            if (group == null) return ApiResponse<PagedResult<MemberDto>>.Fail("Group not found.");
+            // Use specification for members with paging
+            var spec = new Miqat.Application.Specifications.Groups.GroupMembersByGroupIdWithUsersSpec(groupId, pageIndex, pageSize);
+            var members = await _unitOfWork.Repository<GroupMember>().ListAsync(spec);
+
+            // Also get total count for pagination
+            var countSpec = new Miqat.Application.Specifications.Groups.GroupMembersByGroupIdSpec(groupId);
+            var total = await _unitOfWork.Repository<GroupMember>().CountAsync(countSpec);
+
+            var dtos = members.Select(m => new MemberDto
+            {
+                UserId = m.UserId,
+                FullName = m.User.FullName,
+                Email = m.User.Email,
+                ProfilePictureUrl = m.User.ProfilePictureUrl,
+                JoinedAt = m.JoinedAt
+            }).ToList();
+
+            var paged = PagedResult<MemberDto>.Create(dtos, total, pageIndex, pageSize);
+            return ApiResponse<PagedResult<MemberDto>>.Ok(paged);
         }
     }
 }

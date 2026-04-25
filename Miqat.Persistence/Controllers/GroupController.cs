@@ -25,7 +25,8 @@ namespace Miqat.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var groups = await _groupService.GetAllGroups();
+            var userId = GetCurrentUserId();
+            var groups = await _groupService.GetAllGroups(userId);
             return Ok(groups);
         }
 
@@ -76,6 +77,13 @@ namespace Miqat.API.Controllers
             var result = await _groupService.RemoveMemberAsync(groupId, userId);
             if (!result) return NotFound(new { message = "Member not found." });
             return Ok(new { message = "Member removed successfully." });
+        }
+        [HttpGet("{groupId}/members")]
+        public async Task<IActionResult> GetMembers(Guid groupId, int pageIndex = 0, int pageSize = 20)
+        {
+            var response = await _groupService.GetGroupMembersPaged(groupId, pageIndex, pageSize);
+            if (!response.Success) return NotFound(new { message = response.Message });
+            return Ok(response.Data);
         }
     }
 }

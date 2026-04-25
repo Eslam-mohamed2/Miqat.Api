@@ -59,7 +59,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
         policy.WithOrigins(
-            "https://miqat.vercel.app",     // 🔁 confirm this is your exact Vercel URL
+            "https://miqatsmartcalendar.vercel.app",
+            "https://miqat.vercel.app",
             "http://localhost:3000",
             "http://localhost:4200",
             "https://localhost:7000")

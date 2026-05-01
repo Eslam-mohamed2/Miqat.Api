@@ -35,6 +35,18 @@ namespace Miqat.Domain.Entities
         public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
+        // Friendships: Friend requests sent by this user
+        public virtual ICollection<Friendship> FriendshipsSent { get; set; } = new List<Friendship>();
+
+        // Friendships: Friend requests received by this user
+        public virtual ICollection<Friendship> FriendshipsReceived { get; set; } = new List<Friendship>();
+
+        // Mentions: Mentions created by this user
+        public virtual ICollection<Mention> MentionsCreated { get; set; } = new List<Mention>();
+
+        // Mentions: Mentions where this user is mentioned
+        public virtual ICollection<Mention> MentionsReceived { get; set; } = new List<Mention>();
+
         public User(string fullName, string email, DateTime dateOfBirth,
                     Gender? gender, string? country,
                     string? phoneNumber = null, string timeZone = "UTC")

@@ -13,10 +13,12 @@ namespace Miqat.API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IBlobStorageService _blobStorageService;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IBlobStorageService blobStorageService)
         {
             _userService = userService;
+            _blobStorageService = blobStorageService;
         }
 
         private Guid GetCurrentUserId() =>
@@ -70,6 +72,36 @@ namespace Miqat.API.Controllers
             var result = await _userService.DeleteAsync(id);
             if (!result) return NotFound(new { message = "User not found." });
             return NoContent();
+        }
+
+        [HttpPost("upload-profile-image")]
+        public async Task<IActionResult> UploadProfileImage(IFormFile file)
+        {
+            try
+            {
+                // Upload to Azure Blob Storage
+                var imageUrl = await _blobStorageService.UploadImageAsync(file);
+
+                // Get current user and update profile picture URL
+                var userId = GetCurrentUserId();
+                var user = await _userService.GetUserById(userId);
+                if (user == null) return NotFound(new { message = "User not found." });
+
+                // Update user profile picture
+                user.ProfilePictureUrl = imageUrl;
+                var updateResult = await _userService.UpdateAsync(userId, user);
+                if (!updateResult) return BadRequest(new { message = "Failed to update user profile picture." });
+
+                return Ok(new { profileImageUrl = imageUrl });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
         }
     }
 }

@@ -85,6 +85,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IFriendService, FriendService>();
+builder.Services.AddScoped<IMentionService, MentionService>();
 
 // ── Email Settings ────────────────────────────────────────────────────────────
 builder.Services.Configure<EmailSettings>(

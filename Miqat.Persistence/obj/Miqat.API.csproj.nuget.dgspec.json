@@ -208,6 +208,10 @@
           "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
+            "Azure.Storage.Blobs": {
+              "target": "Package",
+              "version": "[12.27.0, )"
+            },
             "BCrypt.Net-Next": {
               "target": "Package",
               "version": "[4.0.3, )"
@@ -215,10 +219,6 @@
             "Google.Apis.Auth": {
               "target": "Package",
               "version": "[1.68.0, )"
-            },
-            "MailKit": {
-              "target": "Package",
-              "version": "[3.5.0, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",

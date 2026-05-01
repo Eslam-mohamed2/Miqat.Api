@@ -12,6 +12,9 @@ namespace Miqat.Domain.Enumerations
         TaskCompleted,
         TaskDueSoon,
         GroupInvite,
-        MentionedInTask
+        MentionedInTask,
+        FriendRequestSent,
+        FriendRequestAccepted,
+        UserBlocked
     }
 }

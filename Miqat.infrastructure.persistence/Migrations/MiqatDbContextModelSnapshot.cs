@@ -22,6 +22,52 @@ namespace Miqat.infrastructure.persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Miqat.Domain.Entities.Friendship", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ReceiverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("SenderId", "ReceiverId")
+                        .IsUnique();
+
+                    b.ToTable("Friendships");
+                });
+
             modelBuilder.Entity("Miqat.Domain.Entities.Group", b =>
                 {
                     b.Property<Guid>("Id")
@@ -104,6 +150,59 @@ namespace Miqat.infrastructure.persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("GroupMembers");
+                });
+
+            modelBuilder.Entity("Miqat.Domain.Entities.Mention", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("MentionedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MentionedUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityId");
+
+                    b.HasIndex("MentionedByUserId");
+
+                    b.HasIndex("MentionedUserId");
+
+                    b.HasIndex("MentionedUserId", "IsRead");
+
+                    b.ToTable("Mentions");
                 });
 
             modelBuilder.Entity("Miqat.Domain.Entities.Notification", b =>
@@ -492,6 +591,25 @@ namespace Miqat.infrastructure.persistence.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Miqat.Domain.Entities.Friendship", b =>
+                {
+                    b.HasOne("Miqat.Domain.Entities.User", "Receiver")
+                        .WithMany("FriendshipsReceived")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Miqat.Domain.Entities.User", "Sender")
+                        .WithMany("FriendshipsSent")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("Miqat.Domain.Entities.Group", b =>
                 {
                     b.HasOne("Miqat.Domain.Entities.User", "Owner")
@@ -520,6 +638,25 @@ namespace Miqat.infrastructure.persistence.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Miqat.Domain.Entities.Mention", b =>
+                {
+                    b.HasOne("Miqat.Domain.Entities.User", "MentionedByUser")
+                        .WithMany("MentionsCreated")
+                        .HasForeignKey("MentionedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Miqat.Domain.Entities.User", "MentionedUser")
+                        .WithMany("MentionsReceived")
+                        .HasForeignKey("MentionedUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MentionedByUser");
+
+                    b.Navigation("MentionedUser");
                 });
 
             modelBuilder.Entity("Miqat.Domain.Entities.Notification", b =>
@@ -607,7 +744,15 @@ namespace Miqat.infrastructure.persistence.Migrations
 
             modelBuilder.Entity("Miqat.Domain.Entities.User", b =>
                 {
+                    b.Navigation("FriendshipsReceived");
+
+                    b.Navigation("FriendshipsSent");
+
                     b.Navigation("GroupMembers");
+
+                    b.Navigation("MentionsCreated");
+
+                    b.Navigation("MentionsReceived");
 
                     b.Navigation("Notifications");
 

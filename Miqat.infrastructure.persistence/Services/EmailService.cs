@@ -1,20 +1,21 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using Miqat.Application.Common;
 using Miqat.Application.Interfaces;
 using sib_api_v3_sdk.Api;
 using sib_api_v3_sdk.Client;
 using sib_api_v3_sdk.Model;
-using MimeKit;
-using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Task = System.Threading.Tasks.Task;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Miqat.infrastructure.persistence.Services
 {
     public class EmailService : IEmailService
     {
         private readonly EmailSettings _settings;
-        private readonly string _primaryColor = "#4F46E5"; // Deep Indigo (Modern SaaS Look)
+        private readonly string _primaryColor = "#4F46E5";
         private readonly string _backgroundColor = "#F9FAFB";
         private readonly ILogger<EmailService> _logger;
 
@@ -23,7 +24,6 @@ namespace Miqat.infrastructure.persistence.Services
             _settings = settings.Value;
             _logger = logger;
 
-            // Configure Brevo API key only when provided.
             if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
             {
                 Configuration.Default.ApiKey["api-key"] = _settings.ApiKey;
@@ -93,11 +93,8 @@ namespace Miqat.infrastructure.persistence.Services
             await SendEmailAsync(toEmail, fullName, subject, html, text);
         }
 
-        // ─── Private Helper Methods ───
-
         private string GetBaseTemplate(string name, string content, string preheader = "")
         {
-            // A cleaner, responsive HTML template with preheader and brand header
             return $@"
             <!doctype html>
             <html>
@@ -119,7 +116,7 @@ namespace Miqat.infrastructure.persistence.Services
                                 <h2 style='color: {_primaryColor}; margin:0; font-size:22px;'>Miqat</h2>
                               </td>
                               <td style='text-align:right; vertical-align:middle;'>
-                                <!-- Optional small logo or link -->
+                                <!-- Optional logo -->
                               </td>
                             </tr>
                           </table>
@@ -154,58 +151,6 @@ namespace Miqat.infrastructure.persistence.Services
 
         private async Task SendEmailAsync(string toEmail, string toName, string subject, string htmlBody, string? textBody = null)
         {
-            // Priority: if SMTP settings are provided, use MailKit/SMTP (more deployment-friendly).
-            if (!string.IsNullOrWhiteSpace(_settings.SmtpHost))
-            {
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromEmail));
-                message.To.Add(new MailboxAddress(toName, toEmail));
-                message.Subject = subject ?? string.Empty;
-
-                var builder = new BodyBuilder();
-                if (!string.IsNullOrEmpty(textBody)) builder.TextBody = textBody;
-                if (!string.IsNullOrEmpty(htmlBody)) builder.HtmlBody = htmlBody;
-                message.Body = builder.ToMessageBody();
-
-                int attempts = 0;
-                const int maxAttempts = 3;
-                while (true)
-                {
-                    attempts++;
-                    using var client = new MailKit.Net.Smtp.SmtpClient();
-                    try
-                    {
-                        var secureSocket = _settings.SmtpUseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTlsWhenAvailable;
-                        await client.ConnectAsync(_settings.SmtpHost, _settings.SmtpPort, secureSocket);
-
-                        if (!string.IsNullOrWhiteSpace(_settings.SmtpUsername))
-                        {
-                            await client.AuthenticateAsync(_settings.SmtpUsername, _settings.SmtpPassword);
-                        }
-
-                        await client.SendAsync(message);
-                        await client.DisconnectAsync(true);
-                        _logger.LogInformation("Email sent to {Email} via SMTP on attempt {Attempt}", toEmail, attempts);
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "SMTP send attempt {Attempt} failed for {Email}", attempts, toEmail);
-                        if (attempts >= maxAttempts)
-                        {
-                            _logger.LogError(ex, "SMTP send failed after {Attempts} attempts for {Email}", attempts, toEmail);
-                            throw;
-                        }
-
-                        // Exponential backoff
-                        await Task.Delay(1000 * (int)Math.Pow(2, attempts));
-                    }
-                }
-
-                return;
-            }
-
-            // Fallback to Brevo / Sendinblue API if API key provided
             if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
             {
                 int attempts = 0;
@@ -240,8 +185,8 @@ namespace Miqat.infrastructure.persistence.Services
                 return;
             }
 
-            _logger.LogError("No email provider configured. Set SMTP settings or ApiKey in EmailSettings.");
-            throw new InvalidOperationException("No email provider configured. Set SMTP settings or ApiKey in EmailSettings.");
+            _logger.LogError("No email provider configured. Set ApiKey in EmailSettings.");
+            throw new InvalidOperationException("No email provider configured. Set ApiKey in EmailSettings.");
         }
     }
 }

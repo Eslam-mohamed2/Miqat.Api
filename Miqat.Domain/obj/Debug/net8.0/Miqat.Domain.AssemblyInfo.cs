@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Miqat.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6c5f6381d79c6ee7f8d599b3dd214eb764743e7b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7c34ab18719d6638ad660a80034a1546b6608408")]
 [assembly: System.Reflection.AssemblyProductAttribute("Miqat.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Miqat.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -187,6 +187,22 @@
   },
   {
     "ContainingType": "Miqat.API.Controllers.FriendsController",
+    "Method": "Unfriend",
+    "RelativePath": "api/Friends/{friendshipId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "friendshipId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Miqat.API.Controllers.FriendsController",
     "Method": "AcceptFriendRequest",
     "RelativePath": "api/Friends/accept/{friendshipId}",
     "HttpMethod": "PUT",
@@ -263,6 +279,32 @@
     "ContainingType": "Miqat.API.Controllers.FriendsController",
     "Method": "GetSentRequests",
     "RelativePath": "api/Friends/sent",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Miqat.API.Controllers.FriendsController",
+    "Method": "GetFriendshipStatus",
+    "RelativePath": "api/Friends/status/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Miqat.API.Controllers.FriendsController",
+    "Method": "GetSuggestions",
+    "RelativePath": "api/Friends/suggestions",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -799,6 +841,22 @@
         "Name": "dto",
         "Type": "Miqat.Application.Modules.UserDto",
         "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Miqat.API.Controllers.UserController",
+    "Method": "SearchUsers",
+    "RelativePath": "api/User/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "query",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

@@ -13,5 +13,8 @@ namespace Miqat.Application.Interfaces
         Task<IEnumerable<FriendshipDto>> GetSentRequestsAsync(Guid userId);
         Task<bool> UnblockUserAsync(Guid userId, Guid blockedUserId);
         Task<FriendshipDto?> GetFriendshipAsync(Guid friendshipId);
+        Task DeleteAsync(Guid friendshipId, Guid currentUserId);
+        Task<string> GetStatusAsync(Guid currentUserId, Guid targetUserId);
+        Task<IEnumerable<UserDto>> GetSuggestionsAsync(Guid currentUserId);
     }
 }

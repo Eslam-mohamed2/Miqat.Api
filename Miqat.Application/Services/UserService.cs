@@ -81,5 +81,33 @@ namespace Miqat.Application.Services
             _unitOfWork.Repository<User>().Update(entity);
             return await _unitOfWork.CompleteAsync() > 0;
         }
+
+        public async Task<IEnumerable<UserDto>> SearchAsync(string query, Guid excludeUserId)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return new List<UserDto>();
+
+            var lowerQuery = query.ToLower();
+            var allUsers = await _unitOfWork.Repository<User>().GetAllAsync();
+
+            var matchedUsers = allUsers
+                .Where(u => u.Id != excludeUserId &&
+                           !u.IsDeleted &&
+                           (u.FullName.ToLower().Contains(lowerQuery) ||
+                            u.Email.ToLower().Contains(lowerQuery)))
+                .Take(20)
+                .ToList();
+
+            var dtos = matchedUsers.Select(u => new UserDto
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email,
+                Country = u.Country,
+                ProfilePictureUrl = u.ProfilePictureUrl
+            }).ToList();
+
+            return dtos;
+        }
     }
 }

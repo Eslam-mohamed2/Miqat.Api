@@ -1,4 +1,4 @@
-﻿using Miqat.Domain.Common;
+using Miqat.Domain.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;

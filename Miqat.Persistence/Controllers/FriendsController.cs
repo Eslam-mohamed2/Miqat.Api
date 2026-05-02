@@ -178,5 +178,54 @@ namespace Miqat.API.Controllers
                 return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
             }
         }
+
+        [HttpDelete("{friendshipId}")]
+        public async Task<IActionResult> Unfriend(Guid friendshipId)
+        {
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                await _friendService.DeleteAsync(friendshipId, currentUserId);
+                return Ok(new { message = "Unfriended successfully" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
+            }
+        }
+
+        [HttpGet("status/{userId}")]
+        public async Task<IActionResult> GetFriendshipStatus(Guid userId)
+        {
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                var status = await _friendService.GetStatusAsync(currentUserId, userId);
+                return Ok(new { status });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
+            }
+        }
+
+        [HttpGet("suggestions")]
+        public async Task<IActionResult> GetSuggestions()
+        {
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                var suggestions = await _friendService.GetSuggestionsAsync(currentUserId);
+                return Ok(suggestions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
+            }
+        }
     }
 }

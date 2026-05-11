@@ -1,109 +1,901 @@
 [
   {
-    "id": "1533661d-c702-4c30-ad1f-2868205f35cb",
-    "title": "New Task Assigned",
-    "message": "Eslam assigned you Design API Architecture",
-    "type": "TaskAssigned",
-    "recipientUserId": "00000000-0000-0000-0000-000000000002",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000001",
+    "id": "40000001-0000-0000-0000-000000000000",
+    "title": "Sarah Johnson accepted your friend request",
+    "message": "Sarah Johnson accepted your friend request",
+    "type": "FriendRequestAccepted",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000002-0000-0000-0000-000000000000",
     "isRead": false
   },
   {
-    "id": "a94f1d95-58a5-4c93-93d9-4271e301530b",
-    "title": "New Task Assigned",
-    "message": "You have been assigned Write Unit Tests",
-    "type": "TaskAssigned",
-    "recipientUserId": "00000000-0000-0000-0000-000000000003",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000001",
+    "id": "40000002-0000-0000-0000-000000000000",
+    "title": "Ahmed Hassan completed task: Add pagination to all list endpoints",
+    "message": "Ahmed Hassan completed the task 'Add pagination to all list endpoints'",
+    "type": "TaskCompleted",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000003-0000-0000-0000-000000000000",
     "isRead": false
   },
   {
-    "id": "2c818d6c-3583-4910-9d12-68dc40ecf2fd",
-    "title": "Group Invite",
-    "message": "You have been added to Product Engineering",
-    "type": "GroupInvite",
-    "recipientUserId": "00000000-0000-0000-0000-000000000004",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000001",
+    "id": "40000003-0000-0000-0000-000000000000",
+    "title": "James Miller sent you a friend request",
+    "message": "James Miller sent you a friend request",
+    "type": "FriendRequestSent",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000009-0000-0000-0000-000000000000",
     "isRead": false
   },
   {
-    "id": "9ea8d8a5-8860-484e-a57d-e3429ed575c6",
-    "title": "Group Invite",
-    "message": "You have been added to Marketing and Growth",
-    "type": "GroupInvite",
-    "recipientUserId": "00000000-0000-0000-0000-000000000012",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000011",
-    "isRead": false
-  },
-  {
-    "id": "0129e310-cc97-4b05-bb64-6fe73612c1b1",
-    "title": "Task Due Soon",
-    "message": "Q3 Budget Review is due in 2 days",
+    "id": "40000004-0000-0000-0000-000000000000",
+    "title": "Task 'Launch day checklist' is due tomorrow",
+    "message": "Your task 'Launch day checklist' is due tomorrow",
     "type": "TaskDueSoon",
-    "recipientUserId": "00000000-0000-0000-0000-000000000006",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
     "triggeredByUserId": null,
     "isRead": false
   },
   {
-    "id": "4508fce6-0d6d-40bf-9af2-42b41cb608f3",
-    "title": "Task Due Soon",
-    "message": "Setup CI/CD Pipeline is due in 5 days",
-    "type": "TaskDueSoon",
-    "recipientUserId": "00000000-0000-0000-0000-000000000037",
+    "id": "40000005-0000-0000-0000-000000000000",
+    "title": "Emma Wilson joined Product Team group",
+    "message": "Emma Wilson joined the Product Team group",
+    "type": "GroupInvite",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000004-0000-0000-0000-000000000000",
+    "isRead": true
+  },
+  {
+    "id": "40000006-0000-0000-0000-000000000000",
+    "title": "New task assigned to you: Fix CORS issues on staging",
+    "message": "You have been assigned task: Fix CORS issues on staging",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
     "triggeredByUserId": null,
     "isRead": false
   },
   {
-    "id": "b4ce31de-b207-4c8a-a486-1e118837eb0f",
-    "title": "Task Completed",
-    "message": "Omar completed Write Unit Tests",
+    "id": "40000007-0000-0000-0000-000000000000",
+    "title": "Mohammed Ali accepted your friend request",
+    "message": "Mohammed Ali accepted your friend request",
+    "type": "FriendRequestAccepted",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000005-0000-0000-0000-000000000000",
+    "isRead": true
+  },
+  {
+    "id": "40000008-0000-0000-0000-000000000000",
+    "title": "Task 'Set up local dev environment' was marked completed",
+    "message": "Your task 'Set up local dev environment' was completed",
     "type": "TaskCompleted",
-    "recipientUserId": "00000000-0000-0000-0000-000000000001",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000003",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000009-0000-0000-0000-000000000000",
+    "title": "Miqat Launch group has 3 new tasks",
+    "message": "New tasks have been added to the Miqat Launch group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
     "isRead": false
   },
   {
-    "id": "fc666a78-f6a5-42ec-be1d-72bdc9a78b50",
-    "title": "Task Completed",
-    "message": "James completed Setup CI/CD Pipeline",
-    "type": "TaskCompleted",
-    "recipientUserId": "00000000-0000-0000-0000-000000000035",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000027",
-    "isRead": false
-  },
-  {
-    "id": "2caf4674-74c0-4990-acc9-1d8e2c0ea2e3",
-    "title": "Mentioned in Task",
-    "message": "Sara mentioned you in API Documentation",
+    "id": "40000010-0000-0000-0000-000000000000",
+    "title": "Ahmed Hassan mentioned you in task: Fix JWT refresh token bug",
+    "message": "Ahmed Hassan mentioned you in task 'Fix JWT refresh token bug'",
     "type": "MentionedInTask",
-    "recipientUserId": "00000000-0000-0000-0000-000000000004",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000002",
+    "recipientUserId": "00000001-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000003-0000-0000-0000-000000000000",
     "isRead": false
   },
   {
-    "id": "a6741793-1c0a-4985-bad5-5df657f25a88",
-    "title": "Mentioned in Task",
-    "message": "Eslam mentioned you in Team Building Event",
-    "type": "MentionedInTask",
-    "recipientUserId": "00000000-0000-0000-0000-000000000002",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000001",
+    "id": "40000011-0000-0000-0000-000000000000",
+    "title": "Eslam Mohamed sent you a friend request",
+    "message": "Eslam Mohamed sent you a friend request",
+    "type": "FriendRequestSent",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000001-0000-0000-0000-000000000000",
     "isRead": false
   },
   {
-    "id": "d109f5a8-0318-449d-8a1b-59279ed61f05",
-    "title": "Group Invite",
-    "message": "You have been added to Design System",
-    "type": "GroupInvite",
-    "recipientUserId": "00000000-0000-0000-0000-000000000029",
-    "triggeredByUserId": "00000000-0000-0000-0000-000000000027",
+    "id": "40000012-0000-0000-0000-000000000000",
+    "title": "New task assigned: Social media content Q3",
+    "message": "You have been assigned task: Social media content Q3",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
     "isRead": false
   },
   {
-    "id": "6822699e-0034-4f8b-8e8f-0e45b974739b",
-    "title": "Task Due Soon",
-    "message": "Invoice Processing is due tomorrow",
+    "id": "40000013-0000-0000-0000-000000000000",
+    "title": "Task 'Beta user invitations' is overdue",
+    "message": "Your task 'Beta user invitations' is overdue",
     "type": "TaskDueSoon",
-    "recipientUserId": "00000000-0000-0000-0000-000000000017",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000014-0000-0000-0000-000000000000",
+    "title": "Lisa Chen accepted your friend request",
+    "message": "Lisa Chen accepted your friend request",
+    "type": "FriendRequestAccepted",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000006-0000-0000-0000-000000000000",
+    "isRead": false
+  },
+  {
+    "id": "40000015-0000-0000-0000-000000000000",
+    "title": "New member joined Marketing Squad",
+    "message": "A new member has joined the Marketing Squad group",
+    "type": "GroupInvite",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000016-0000-0000-0000-000000000000",
+    "title": "Task 'Q3 product roadmap' due in 5 days",
+    "message": "Your task 'Q3 product roadmap' is due in 5 days",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000017-0000-0000-0000-000000000000",
+    "title": "Eslam Mohamed mentioned you in Miqat Launch",
+    "message": "Eslam Mohamed mentioned you in the Miqat Launch group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000001-0000-0000-0000-000000000000",
+    "isRead": true
+  },
+  {
+    "id": "40000018-0000-0000-0000-000000000000",
+    "title": "Carlos Rodriguez joined Marketing Squad",
+    "message": "Carlos Rodriguez joined the Marketing Squad group",
+    "type": "GroupInvite",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000007-0000-0000-0000-000000000000",
+    "isRead": true
+  },
+  {
+    "id": "40000019-0000-0000-0000-000000000000",
+    "title": "Launch email campaign is due in 2 days",
+    "message": "Your task 'Launch email campaign' is due in 2 days",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000020-0000-0000-0000-000000000000",
+    "title": "Your profile was updated successfully",
+    "message": "Your profile has been updated successfully",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000002-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000021-0000-0000-0000-000000000000",
+    "title": "Eslam Mohamed assigned you: Fix JWT refresh token bug",
+    "message": "You have been assigned task: Fix JWT refresh token bug",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000001-0000-0000-0000-000000000000",
+    "isRead": false
+  },
+  {
+    "id": "40000022-0000-0000-0000-000000000000",
+    "title": "New friend request from Fatima Al-Zahra",
+    "message": "Fatima Al-Zahra sent you a friend request",
+    "type": "FriendRequestSent",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000008-0000-0000-0000-000000000000",
+    "isRead": false
+  },
+  {
+    "id": "40000023-0000-0000-0000-000000000000",
+    "title": "Task 'Add pagination' marked as completed",
+    "message": "The task 'Add pagination to all list endpoints' was completed",
+    "type": "TaskCompleted",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000024-0000-0000-0000-000000000000",
+    "title": "Backend Engineers has 5 new tasks",
+    "message": "New tasks have been added to the Backend Engineers group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000025-0000-0000-0000-000000000000",
+    "title": "James Miller accepted your friend request",
+    "message": "James Miller accepted your friend request",
+    "type": "FriendRequestAccepted",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000009-0000-0000-0000-000000000000",
+    "isRead": true
+  },
+  {
+    "id": "40000026-0000-0000-0000-000000000000",
+    "title": "Security audit task due in 3 days",
+    "message": "Your task 'Security audit fixes' is due in 3 days",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000027-0000-0000-0000-000000000000",
+    "title": "Eslam Mohamed mentioned you in Backend Engineers",
+    "message": "Eslam Mohamed mentioned you in the Backend Engineers group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000001-0000-0000-0000-000000000000",
+    "isRead": true
+  },
+  {
+    "id": "40000028-0000-0000-0000-000000000000",
+    "title": "New task assigned: Write unit tests for AuthService",
+    "message": "You have been assigned task: Write unit tests for AuthService",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000029-0000-0000-0000-000000000000",
+    "title": "Task 'API versioning' is approaching due date",
+    "message": "Your task 'API versioning setup' is approaching its due date",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000030-0000-0000-0000-000000000000",
+    "title": "Mohammed Ali sent you a friend request",
+    "message": "Mohammed Ali sent you a friend request",
+    "type": "FriendRequestSent",
+    "recipientUserId": "00000003-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000005-0000-0000-0000-000000000000",
+    "isRead": true
+  },
+  {
+    "id": "40000031-0000-0000-0000-000000000000",
+    "title": "New task assigned: Redesign dashboard UI",
+    "message": "You have been assigned task: Redesign dashboard UI",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000004-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000032-0000-0000-0000-000000000000",
+    "title": "Design Team has 2 new tasks",
+    "message": "New tasks have been added to the Design Team group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000004-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000033-0000-0000-0000-000000000000",
+    "title": "Onboarding flow design is due in 2 days",
+    "message": "Your task 'Onboarding flow design' is due in 2 days",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000004-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000034-0000-0000-0000-000000000000",
+    "title": "Beta testing coordination in progress",
+    "message": "Your task 'Beta testing coordination' is in progress",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000004-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000035-0000-0000-0000-000000000000",
+    "title": "Customer feedback review complete",
+    "message": "Customer feedback review has been completed",
+    "type": "TaskCompleted",
+    "recipientUserId": "00000004-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000036-0000-0000-0000-000000000000",
+    "title": "New friend request from Nour Ibrahim",
+    "message": "Nour Ibrahim sent you a friend request",
+    "type": "FriendRequestSent",
+    "recipientUserId": "00000004-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000010-0000-0000-0000-000000000000",
+    "isRead": false
+  },
+  {
+    "id": "40000037-0000-0000-0000-000000000000",
+    "title": "New task assigned: Implement friend suggestions API",
+    "message": "You have been assigned task: Implement friend suggestions API",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000005-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000038-0000-0000-0000-000000000000",
+    "title": "Backend Engineers tasks update",
+    "message": "New tasks have been added to the Backend Engineers group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000005-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000039-0000-0000-0000-000000000000",
+    "title": "Task 'Set up Redis caching' due soon",
+    "message": "Your task 'Set up Redis caching' is coming up",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000005-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000040-0000-0000-0000-000000000000",
+    "title": "Product metrics dashboard completed",
+    "message": "Your task 'Product metrics dashboard' has been completed",
+    "type": "TaskCompleted",
+    "recipientUserId": "00000005-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000041-0000-0000-0000-000000000000",
+    "title": "Lisa Chen accepted your friend request",
+    "message": "Lisa Chen accepted your friend request",
+    "type": "FriendRequestAccepted",
+    "recipientUserId": "00000005-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000006-0000-0000-0000-000000000000",
+    "isRead": false
+  },
+  {
+    "id": "40000042-0000-0000-0000-000000000000",
+    "title": "Mobile Team has new tasks",
+    "message": "New tasks have been added to the Mobile Team group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000005-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000043-0000-0000-0000-000000000000",
+    "title": "New task assigned: Social media content Q3",
+    "message": "You have been assigned task: Social media content Q3",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000006-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000044-0000-0000-0000-000000000000",
+    "title": "Analytics dashboard setup completed",
+    "message": "Your task 'Analytics dashboard setup' has been completed",
+    "type": "TaskCompleted",
+    "recipientUserId": "00000006-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000045-0000-0000-0000-000000000000",
+    "title": "Task 'App performance optimization' coming up",
+    "message": "Your task 'App performance optimization' is due soon",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000006-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000046-0000-0000-0000-000000000000",
+    "title": "Yuki Tanaka accepted your friend request",
+    "message": "Yuki Tanaka accepted your friend request",
+    "type": "FriendRequestAccepted",
+    "recipientUserId": "00000006-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000012-0000-0000-0000-000000000000",
+    "isRead": false
+  },
+  {
+    "id": "40000047-0000-0000-0000-000000000000",
+    "title": "Mobile Team mentioned you",
+    "message": "Team members mentioned you in the Mobile Team group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000006-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000048-0000-0000-0000-000000000000",
+    "title": "New task assigned: Press release writing",
+    "message": "You have been assigned task: Press release writing",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000007-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000049-0000-0000-0000-000000000000",
+    "title": "Layla Mahmoud accepted your friend request",
+    "message": "Layla Mahmoud accepted your friend request",
+    "type": "FriendRequestAccepted",
+    "recipientUserId": "00000007-0000-0000-0000-000000000000",
+    "triggeredByUserId": "00000013-0000-0000-0000-000000000000",
+    "isRead": false
+  },
+  {
+    "id": "40000050-0000-0000-0000-000000000000",
+    "title": "New task assigned: Onboarding guide update",
+    "message": "You have been assigned task: Onboarding guide update",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000008-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000051-0000-0000-0000-000000000000",
+    "title": "Customer Success group has new tasks",
+    "message": "New tasks have been added to the Customer Success group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000008-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000052-0000-0000-0000-000000000000",
+    "title": "Launch party planning in progress",
+    "message": "Your task 'Launch party planning' is in progress",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000008-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000053-0000-0000-0000-000000000000",
+    "title": "Support team briefing task assigned",
+    "message": "You have been assigned task: Support team briefing",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000008-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000054-0000-0000-0000-000000000000",
+    "title": "Customer Success mentioned you",
+    "message": "Team members mentioned you in the Customer Success group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000008-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000055-0000-0000-0000-000000000000",
+    "title": "New task assigned: Full regression testing",
+    "message": "You have been assigned task: Full regression testing",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000009-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000056-0000-0000-0000-000000000000",
+    "title": "QA & Testing group update",
+    "message": "New tasks have been added to the QA & Testing group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000009-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000057-0000-0000-0000-000000000000",
+    "title": "Performance load testing due",
+    "message": "Your task 'Performance load testing' is coming up",
+    "type": "TaskDueSoon",
+    "recipientUserId": "00000009-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000058-0000-0000-0000-000000000000",
+    "title": "Security penetration testing assigned",
+    "message": "You have been assigned task: Security penetration testing",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000009-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000059-0000-0000-0000-000000000000",
+    "title": "Backend Engineers mentioned you",
+    "message": "Team members mentioned you in the Backend Engineers group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000009-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000060-0000-0000-0000-000000000000",
+    "title": "New task assigned: API endpoint testing",
+    "message": "You have been assigned task: API endpoint testing",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000010-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000061-0000-0000-0000-000000000000",
+    "title": "Design Team group update",
+    "message": "New tasks have been added to the Design Team group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000010-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000062-0000-0000-0000-000000000000",
+    "title": "Create icon library task assigned",
+    "message": "You have been assigned task: Create icon library",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000010-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000063-0000-0000-0000-000000000000",
+    "title": "Animation guidelines task assigned",
+    "message": "You have been assigned task: Animation guidelines",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000010-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000064-0000-0000-0000-000000000000",
+    "title": "Design Team mentioned you",
+    "message": "Team members mentioned you in the Design Team group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000010-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000065-0000-0000-0000-000000000000",
+    "title": "New task assigned: Write unit tests for AuthService",
+    "message": "You have been assigned task: Write unit tests for AuthService",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000011-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000066-0000-0000-0000-000000000000",
+    "title": "Backend Engineers group update",
+    "message": "New tasks have been added to the Backend Engineers group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000011-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000067-0000-0000-0000-000000000000",
+    "title": "Documentation update task in progress",
+    "message": "Your task 'Documentation update' is in progress",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000011-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000068-0000-0000-0000-000000000000",
+    "title": "Mobile device testing assigned",
+    "message": "You have been assigned task: Mobile device testing",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000011-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000069-0000-0000-0000-000000000000",
+    "title": "Backend Engineers mentioned you",
+    "message": "Team members mentioned you in the Backend Engineers group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000011-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000070-0000-0000-0000-000000000000",
+    "title": "New task assigned: Competitor analysis report",
+    "message": "You have been assigned task: Competitor analysis report",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000012-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000071-0000-0000-0000-000000000000",
+    "title": "Product Team group update",
+    "message": "New tasks have been added to the Product Team group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000012-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000072-0000-0000-0000-000000000000",
+    "title": "Mobile app mockups assigned",
+    "message": "You have been assigned task: Mobile app mockups",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000012-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000073-0000-0000-0000-000000000000",
+    "title": "Release notes writing assigned",
+    "message": "You have been assigned task: Release notes writing",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000012-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000074-0000-0000-0000-000000000000",
+    "title": "Product Team mentioned you",
+    "message": "Team members mentioned you in the Product Team group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000012-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000075-0000-0000-0000-000000000000",
+    "title": "New task assigned: SEO optimization",
+    "message": "You have been assigned task: SEO optimization",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000013-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000076-0000-0000-0000-000000000000",
+    "title": "Marketing Squad group update",
+    "message": "New tasks have been added to the Marketing Squad group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000013-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000077-0000-0000-0000-000000000000",
+    "title": "Community management in progress",
+    "message": "Your task 'Community management' is in progress",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000013-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000078-0000-0000-0000-000000000000",
+    "title": "Support ticket system setup assigned",
+    "message": "You have been assigned task: Support ticket system setup",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000013-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000079-0000-0000-0000-000000000000",
+    "title": "Marketing Squad mentioned you",
+    "message": "Team members mentioned you in the Marketing Squad group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000013-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000080-0000-0000-0000-000000000000",
+    "title": "New task assigned: Kubernetes cluster setup",
+    "message": "You have been assigned task: Kubernetes cluster setup",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000014-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000081-0000-0000-0000-000000000000",
+    "title": "DevOps group update",
+    "message": "New tasks have been added to the DevOps group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000014-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000082-0000-0000-0000-000000000000",
+    "title": "Database query optimization assigned",
+    "message": "You have been assigned task: Database query optimization",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000014-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000083-0000-0000-0000-000000000000",
+    "title": "Infrastructure cost optimization assigned",
+    "message": "You have been assigned task: Infrastructure cost optimization",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000014-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000084-0000-0000-0000-000000000000",
+    "title": "DevOps group mentioned you",
+    "message": "Team members mentioned you in the DevOps group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000014-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000085-0000-0000-0000-000000000000",
+    "title": "New task assigned: Cross browser testing",
+    "message": "You have been assigned task: Cross browser testing",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000015-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000086-0000-0000-0000-000000000000",
+    "title": "QA & Testing group update",
+    "message": "New tasks have been added to the QA & Testing group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000015-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000087-0000-0000-0000-000000000000",
+    "title": "FAQ documentation assigned",
+    "message": "You have been assigned task: FAQ documentation",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000015-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000088-0000-0000-0000-000000000000",
+    "title": "Brand guidelines update completed",
+    "message": "Your task 'Brand guidelines update' has been completed",
+    "type": "TaskCompleted",
+    "recipientUserId": "00000015-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000089-0000-0000-0000-000000000000",
+    "title": "Design Team mentioned you",
+    "message": "Team members mentioned you in the Design Team group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000015-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000090-0000-0000-0000-000000000000",
+    "title": "New task assigned: Android push notifications",
+    "message": "You have been assigned task: Android push notifications",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000016-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000091-0000-0000-0000-000000000000",
+    "title": "Mobile Team group update",
+    "message": "New tasks have been added to the Mobile Team group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000016-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000092-0000-0000-0000-000000000000",
+    "title": "App store optimization assigned",
+    "message": "You have been assigned task: App store optimization",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000016-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000093-0000-0000-0000-000000000000",
+    "title": "Widget implementation assigned",
+    "message": "You have been assigned task: Widget implementation",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000016-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000094-0000-0000-0000-000000000000",
+    "title": "Mobile Team mentioned you",
+    "message": "Team members mentioned you in the Mobile Team group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000016-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000095-0000-0000-0000-000000000000",
+    "title": "New task assigned: Performance benchmarking",
+    "message": "You have been assigned task: Performance benchmarking",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000017-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000096-0000-0000-0000-000000000000",
+    "title": "QA & Testing group update",
+    "message": "New tasks have been added to the QA & Testing group",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000017-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000097-0000-0000-0000-000000000000",
+    "title": "Automated test suite setup assigned",
+    "message": "You have been assigned task: Automated test suite setup",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000017-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000098-0000-0000-0000-000000000000",
+    "title": "QA & Testing mentioned you",
+    "message": "Team members mentioned you in the QA & Testing group",
+    "type": "MentionedInTask",
+    "recipientUserId": "00000017-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": true
+  },
+  {
+    "id": "40000099-0000-0000-0000-000000000000",
+    "title": "New task assigned: Set up Redis caching",
+    "message": "You have been assigned task: Set up Redis caching",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000018-0000-0000-0000-000000000000",
+    "triggeredByUserId": null,
+    "isRead": false
+  },
+  {
+    "id": "40000100-0000-0000-0000-000000000000",
+    "title": "CI/CD pipeline optimization assigned",
+    "message": "You have been assigned task: CI/CD pipeline optimization",
+    "type": "TaskAssigned",
+    "recipientUserId": "00000018-0000-0000-0000-000000000000",
     "triggeredByUserId": null,
     "isRead": false
   }

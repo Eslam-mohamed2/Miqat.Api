@@ -104,6 +104,8 @@ builder.Services.AddScoped<UserSeeder>();
 builder.Services.AddScoped<GroupSeeder>();
 builder.Services.AddScoped<TaskSeeder>();
 builder.Services.AddScoped<NotificationSeeder>();
+builder.Services.AddScoped<FriendshipSeeder>();
+builder.Services.AddScoped<MentionSeeder>();
 builder.Services.AddScoped<SeederRunner>();
 
 // ── Controllers + Swagger ─────────────────────────────────────────────────────

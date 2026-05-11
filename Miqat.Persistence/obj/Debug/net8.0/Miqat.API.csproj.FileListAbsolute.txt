@@ -150,7 +150,6 @@ E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\appsettings.json
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\groups.json
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\notifications.json
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\tasks.json
-E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\users.json
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\Miqat.API.staticwebassets.endpoints.json
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\Miqat.API.exe
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\Miqat.API.deps.json
@@ -298,4 +297,6 @@ E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\Azure.Storage.Common.dll
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\System.ClientModel.dll
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\System.IO.Hashing.dll
 E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\System.Memory.Data.dll
-E:\Projects\Miqat\Miqat.Persistence\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\friendships.json
+E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\mentions.json
+E:\Projects\Miqat\Miqat.Persistence\bin\Debug\net8.0\SeedData\users.json

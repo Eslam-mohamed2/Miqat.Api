@@ -48,7 +48,77 @@ namespace Miqat.Application.Services
             var additional = await _unitOfWork.Repository<Group>().FindAsync(g => memberGroupIdsSet.Contains(g.Id) && !g.IsDeleted);
             groups.AddRange(additional.Where(g => !groups.Any(og => og.Id == g.Id)));
 
-            return _mapper.MapToDtos(groups);
+            return await AttachCountsAsync(groups);
+        }
+
+        /// <summary>
+        /// Fills in member and task counts for a list of projects.
+        /// </summary>
+        /// <remarks>
+        /// These were read off <c>group.Members</c> / <c>group.Tasks</c>, but the
+        /// list query uses FindAsync, which loads neither — so every project card
+        /// reported 0 members and 0 tasks. (Occasionally 1, when an unrelated
+        /// query had happened to pull a GroupMember into the change tracker and
+        /// EF fixed up the navigation, which is why the wrong numbers looked
+        /// arbitrary rather than uniformly zero.)
+        ///
+        /// Three grouped queries in total, regardless of how many projects the
+        /// user has.
+        /// </remarks>
+        private async Task<IEnumerable<GroupDto>> AttachCountsAsync(IList<Group> groups)
+        {
+            var dtos = groups.Select(_mapper.MapToDto).ToList();
+            if (dtos.Count == 0) return dtos;
+
+            var ids = dtos.Select(d => d.Id).ToList();
+
+            var memberCounts = await _unitOfWork.Repository<GroupMember>()
+                .CountGroupedAsync(gm => ids.Contains(gm.GroupId) && !gm.IsDeleted, gm => gm.GroupId);
+
+            var taskCounts = await _unitOfWork.Repository<TaskItem>()
+                .CountGroupedAsync(
+                    t => t.GroupId.HasValue && ids.Contains(t.GroupId.Value) && !t.IsDeleted,
+                    t => t.GroupId!.Value);
+
+            var doneCounts = await _unitOfWork.Repository<TaskItem>()
+                .CountGroupedAsync(
+                    t => t.GroupId.HasValue && ids.Contains(t.GroupId.Value) && !t.IsDeleted
+                         && t.Status == Domain.Enumerations.TaskStatus.Completed,
+                    t => t.GroupId!.Value);
+
+            // Which owners already have a GroupMember row, so the +1 below is
+            // applied only where it is actually missing. Seeded projects have one;
+            // projects created through the app do not.
+            // OwnerName has the same problem the counts had: the mapper reads
+            // group.Owner?.FullName, and FindAsync loads no navigations — so
+            // every card in the list said "Unknown owner".
+            var ownerIds = groups.Select(g => g.OwnerId).Distinct().ToList();
+            var owners = (await _unitOfWork.Repository<User>()
+                    .FindAsync(u => ownerIds.Contains(u.Id)))
+                .ToDictionary(u => u.Id, u => u.FullName);
+
+            var ownerRows = await _unitOfWork.Repository<GroupMember>()
+                .FindAsync(gm => ids.Contains(gm.GroupId) && !gm.IsDeleted);
+            var ownerById = groups.ToDictionary(g => g.Id, g => g.OwnerId);
+            var ownerAlreadyMember = ownerRows
+                .Where(gm => ownerById.TryGetValue(gm.GroupId, out var o) && o == gm.UserId)
+                .Select(gm => gm.GroupId)
+                .ToHashSet();
+
+            foreach (var dto in dtos)
+            {
+                // Counts what the members list shows, owner included — see
+                // GetGroupMembersPaged.
+                if (string.IsNullOrWhiteSpace(dto.OwnerName) && owners.TryGetValue(dto.OwnerId, out var name))
+                    dto.OwnerName = name;
+
+                var members = memberCounts.TryGetValue(dto.Id, out var m) ? m : 0;
+                dto.MemberCount = members + (ownerAlreadyMember.Contains(dto.Id) ? 0 : 1);
+                dto.TaskCount = taskCounts.TryGetValue(dto.Id, out var t) ? t : 0;
+                dto.CompletedTaskCount = doneCounts.TryGetValue(dto.Id, out var d) ? d : 0;
+            }
+
+            return dtos;
         }
 
         public async Task<GroupDto?> GetGroupById(Guid id)
@@ -74,8 +144,20 @@ namespace Miqat.Application.Services
             var taskCount = await _unitOfWork.Repository<TaskItem>().CountAsync(taskCountSpec);
 
             var dto = _mapper.MapToDto(group);
-            dto.MemberCount = memberCount;
+            var ownerHasRow = (await _unitOfWork.Repository<GroupMember>()
+                .FindAsync(gm => gm.GroupId == group.Id && gm.UserId == group.OwnerId && !gm.IsDeleted))
+                .Any();
+            // Same rule as the list endpoint and the members list.
+            dto.MemberCount = memberCount + (ownerHasRow ? 0 : 1);
             dto.TaskCount = taskCount;
+
+            var doneCounts = await _unitOfWork.Repository<TaskItem>()
+                .CountGroupedAsync(
+                    t => t.GroupId == group.Id && !t.IsDeleted
+                         && t.Status == Domain.Enumerations.TaskStatus.Completed,
+                    t => t.GroupId!.Value);
+            dto.CompletedTaskCount = doneCounts.TryGetValue(group.Id, out var d) ? d : 0;
+
             return dto;
         }
 
@@ -248,6 +330,31 @@ namespace Miqat.Application.Services
                 ProfilePictureUrl = m.User.ProfilePictureUrl,
                 JoinedAt = m.JoinedAt
             }).ToList();
+
+            // The owner belongs on the team list. They have no GroupMember row of
+            // their own (nothing creates one), so the list used to omit the one
+            // person who certainly is on the project — and a solo project read as
+            // "0 members". Listed first, and only on the first page.
+            var ownerIsMemberRow = members.Any(m => m.UserId == group.OwnerId);
+            if (!ownerIsMemberRow)
+            {
+                total += 1;
+                if (pageIndex == 0)
+                {
+                    var owner = await _unitOfWork.Repository<User>().GetByIdAsync(group.OwnerId);
+                    if (owner != null)
+                    {
+                        dtos.Insert(0, new MemberDto
+                        {
+                            UserId = owner.Id,
+                            FullName = owner.FullName,
+                            Email = owner.Email,
+                            ProfilePictureUrl = owner.ProfilePictureUrl,
+                            JoinedAt = group.CreatedAt
+                        });
+                    }
+                }
+            }
 
             var paged = PagedResult<MemberDto>.Create(dtos, total, pageIndex, pageSize);
             return ApiResponse<PagedResult<MemberDto>>.Ok(paged);

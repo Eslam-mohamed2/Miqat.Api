@@ -10,5 +10,8 @@ public class GroupDto
     public string? OwnerName { get; set; }
     public int MemberCount { get; set; }
     public int TaskCount { get; set; }
+
+    /// <summary>Completed subset of <see cref="TaskCount"/>, for progress display.</summary>
+    public int CompletedTaskCount { get; set; }
     public DateTime CreatedAt { get; set; }
 }

@@ -31,6 +31,13 @@ public sealed class FakeRepository<T> : IGenericRepository<T> where T : class
     public Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
         Task.FromResult(_items.Where(predicate.Compile()));
 
+    public Task<Dictionary<Guid, int>> CountGroupedAsync(
+        Expression<Func<T, bool>> predicate, Expression<Func<T, Guid>> keySelector) =>
+        Task.FromResult(_items
+            .Where(predicate.Compile())
+            .GroupBy(keySelector.Compile())
+            .ToDictionary(g => g.Key, g => g.Count()));
+
     public Task AddAsync(T entity) { _items.Add(entity); return Task.CompletedTask; }
     public void Update(T entity) { }
     public void Delete(T entity) { _items.Remove(entity); }

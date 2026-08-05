@@ -14,6 +14,10 @@ namespace Miqat.Application.Interfaces
         Task<IReadOnlyList<T>> GetAllAsync();
         Task<T?> GetByIdAsync(Guid id);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+
+        /// <summary>Counts matching rows per key in one grouped query.</summary>
+        Task<Dictionary<Guid, int>> CountGroupedAsync(
+            Expression<Func<T, bool>> predicate, Expression<Func<T, Guid>> keySelector);
         Task AddAsync(T entity);
         void Update(T entity);
         void Delete(T entity);

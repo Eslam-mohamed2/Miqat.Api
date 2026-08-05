@@ -23,6 +23,22 @@ namespace Miqat.infrastructure.persistence.Repositories.GenericRepository
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
             => await _context.Set<T>().Where(predicate).ToListAsync();
 
+        /// <summary>
+        /// Counts matching rows per key in a single grouped query.
+        /// </summary>
+        /// <remarks>
+        /// Exists so list endpoints can attach counts without either loading the
+        /// child collections or issuing one COUNT per parent. Both alternatives
+        /// scale with the number of parents; this does not.
+        /// </remarks>
+        public async Task<Dictionary<Guid, int>> CountGroupedAsync(
+            Expression<Func<T, bool>> predicate, Expression<Func<T, Guid>> keySelector)
+            => await _context.Set<T>()
+                .Where(predicate)
+                .GroupBy(keySelector)
+                .Select(g => new { Key = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Key, x => x.Count);
+
         public async Task AddAsync(T entity)
             => await _context.Set<T>().AddAsync(entity);
 

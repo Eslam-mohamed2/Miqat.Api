@@ -11,7 +11,7 @@ namespace Miqat.Application.Interfaces
     {
         Task<IEnumerable<TaskDto>> GetAllTasks();
         Task<IEnumerable<TaskDto>> GetTasksByUserId(Guid userId);
-        Task<IEnumerable<TaskDto>> GetTasksByUserIdPaged(Guid userId, int pageIndex, int pageSize);
+        Task<Common.PagedResult<TaskDto>> GetTasksByUserIdPaged(Guid userId, int pageIndex, int pageSize);
         Task<IEnumerable<TaskDto>> GetTasksDueSoon(Guid userId, int withinDays = 3);
         Task<IEnumerable<TaskDto>> GetTasksByGroup(Guid groupId);
         Task<TaskDto?> GetTaskById(Guid id);

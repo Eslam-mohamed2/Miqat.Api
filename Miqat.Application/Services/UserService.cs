@@ -73,6 +73,36 @@ namespace Miqat.Application.Services
             return await _unitOfWork.CompleteAsync() > 0;
         }
 
+        public async Task<bool> UpdateProfileAsync(Guid id, UpdateProfileDto dto)
+        {
+            var entity = await _unitOfWork.Repository<User>().GetByIdAsync(id);
+            if (entity == null) return false;
+
+            entity.FullName = dto.FullName;
+            entity.PhoneNumber = dto.PhoneNumber;
+            entity.Country = dto.Country;
+            entity.DateOfBirth = dto.DateOfBirth;
+
+            // Users.TimeZone is NOT NULL in the schema, so "clear this field" is
+            // not expressible for it — assigning null threw a 23502 constraint
+            // violation and surfaced as a 500. A blank value leaves the existing
+            // zone alone, falling back to UTC only if there is nothing to keep.
+            if (!string.IsNullOrWhiteSpace(dto.TimeZone))
+                entity.TimeZone = dto.TimeZone;
+            else if (string.IsNullOrWhiteSpace(entity.TimeZone))
+                entity.TimeZone = "UTC";
+
+            if (Enum.TryParse<Gender>(dto.Gender, ignoreCase: true, out var gender))
+                entity.Gender = gender;
+
+            // Email, Role and ProfilePictureUrl are deliberately not assignable
+            // here — see UpdateProfileDto.
+
+            entity.SetUpdated();
+            _unitOfWork.Repository<User>().Update(entity);
+            return await _unitOfWork.CompleteAsync() > 0;
+        }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
             var entity = await _unitOfWork.Repository<User>().GetByIdAsync(id);

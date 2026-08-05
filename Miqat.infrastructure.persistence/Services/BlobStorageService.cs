@@ -9,23 +9,49 @@ namespace Miqat.infrastructure.persistence.Services
 {
     public class BlobStorageService : IBlobStorageService
     {
-        private readonly BlobContainerClient _containerClient;
         private readonly ILogger<BlobStorageService> _logger;
+        private readonly string? _connectionString;
+        private readonly string? _containerName;
+        private BlobContainerClient? _cachedContainerClient;
 
         private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png" };
         private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5MB
 
+        /// <summary>
+        /// Only reads configuration here; the client is built on first actual use.
+        ///
+        /// It used to be constructed eagerly, and because UserController injects this
+        /// service, DI built it on *every* request to that controller. With storage
+        /// unconfigured the constructor threw, so GET /api/User/me — which never
+        /// touches blob storage — failed with
+        /// "Value cannot be null. (Parameter 'connectionString')", taking the whole
+        /// user endpoint (and the sidebar profile card) down with it.
+        ///
+        /// The settings arrive as empty strings rather than null when present but
+        /// blank, so the old `?? throw` never caught the real case.
+        /// </summary>
         public BlobStorageService(IConfiguration configuration, ILogger<BlobStorageService> logger)
         {
             _logger = logger;
+            _connectionString = configuration["AzureStorage:ConnectionString"];
+            _containerName = configuration["AzureStorage:ContainerName"];
+        }
 
-            var connectionString = configuration["AzureStorage:ConnectionString"]
-                ?? throw new InvalidOperationException("AzureStorage:ConnectionString not configured.");
-            var containerName = configuration["AzureStorage:ContainerName"]
-                ?? throw new InvalidOperationException("AzureStorage:ContainerName not configured.");
+        /// <summary>True when image upload is actually available.</summary>
+        public bool IsConfigured =>
+            !string.IsNullOrWhiteSpace(_connectionString) && !string.IsNullOrWhiteSpace(_containerName);
 
-            var blobServiceClient = new BlobServiceClient(connectionString);
-            _containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        private BlobContainerClient ContainerClient
+        {
+            get
+            {
+                if (!IsConfigured)
+                    throw new InvalidOperationException(
+                        "Image upload is unavailable: AzureStorage:ConnectionString / ContainerName are not configured.");
+
+                return _cachedContainerClient ??=
+                    new BlobServiceClient(_connectionString).GetBlobContainerClient(_containerName);
+            }
         }
 
         public async Task<string> UploadImageAsync(IFormFile file)
@@ -46,7 +72,7 @@ namespace Miqat.infrastructure.persistence.Services
             {
                 // Generate unique blob name: userId-timestamp-guid.ext
                 var blobName = $"profile-images/{Guid.NewGuid()}-{DateTime.UtcNow:yyyyMMddHHmmss}{extension}";
-                var blobClient = _containerClient.GetBlobClient(blobName);
+                var blobClient = ContainerClient.GetBlobClient(blobName);
 
                 // Upload file
                 using (var stream = file.OpenReadStream())

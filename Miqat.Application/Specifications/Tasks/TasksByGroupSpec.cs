@@ -15,6 +15,9 @@ namespace Miqat.Application.Specifications.Tasks
         {
             AddInclude(t => t.User);
             AddInclude(t => t.AssignedToUser!);
+            // Without this GroupName maps to null, since the DTO flattens it from
+            // the Group navigation property.
+            AddInclude(t => t.Group!);
             AddOrderByDescending(t => t.CreatedAt);
         }
     }

@@ -485,3 +485,12 @@ M i q a t . P e r s i s t e n c e / a p p s e t t i n g s . j s o n  
 # TypeScript files - should not be in .NET backend project
 *.ts
 *.tsx
+
+# Local development secrets
+.env
+.azure-jwt-secret.txt
+
+# Build output — never tracked; these directories were committed early on and
+# are untracked as of the production-hardening pass.
+**/bin/
+**/obj/

@@ -15,11 +15,22 @@ namespace Miqat.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly GroupMapper _mapper;
+        private readonly IAccessPolicy _access;
+        private readonly ICurrentUserService _currentUser;
+        private readonly IRealtimeNotifier _realtime;
 
-        public GroupService(IUnitOfWork unitOfWork, GroupMapper mapper)
+        public GroupService(
+            IUnitOfWork unitOfWork,
+            GroupMapper mapper,
+            IAccessPolicy access,
+            ICurrentUserService currentUser,
+            IRealtimeNotifier realtime)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _access = access;
+            _currentUser = currentUser;
+            _realtime = realtime;
         }
 
         public async Task<IEnumerable<GroupDto>> GetAllGroups(Guid userId)
@@ -52,6 +63,9 @@ namespace Miqat.Application.Services
 
             if (group == null) return null;
 
+            await _access.RequireAsync(
+                _access.CanViewGroupAsync(id), "You do not have access to this project.");
+
             // Instead of returning preloaded members/tasks, compute counts via repository COUNT queries
             var memberCountSpec = new GroupMembersByGroupIdSpec(group.Id);
             var taskCountSpec = new Miqat.Application.Specifications.Tasks.TasksByGroupSpec(group.Id);
@@ -67,6 +81,11 @@ namespace Miqat.Application.Services
 
         public async Task<GroupDto> CreateAsync(GroupDto dto)
         {
+            // Ownership comes from the token. The controller also sets this, but
+            // relying on the payload alone would let a caller create a project
+            // owned by somebody else.
+            dto.OwnerId = _currentUser.RequireUserId();
+
             var entity = new Group(
                 dto.Name,
                 dto.Description,
@@ -81,6 +100,10 @@ namespace Miqat.Application.Services
 
         public async Task<bool> UpdateAsync(Guid id, GroupDto dto)
         {
+            await _access.RequireAsync(
+                _access.CanManageGroupAsync(id),
+                "Only the project owner can change its details.");
+
             var entity = await _unitOfWork.Repository<Group>().GetByIdAsync(id);
             if (entity == null) return false;
 
@@ -95,6 +118,10 @@ namespace Miqat.Application.Services
 
         public async Task<bool> DeleteAsync(Guid id)
         {
+            await _access.RequireAsync(
+                _access.CanManageGroupAsync(id),
+                "Only the project owner can delete it.");
+
             var entity = await _unitOfWork.Repository<Group>().GetByIdAsync(id);
             if (entity == null) return false;
             entity.SoftDelete();
@@ -102,8 +129,12 @@ namespace Miqat.Application.Services
             return await _unitOfWork.CompleteAsync() > 0;
         }
 
-        public async Task<bool> AddMemberAsync(Guid groupId, Guid userId)
+        public async Task<bool> AddMemberAsync(Guid groupId, Guid userId, Guid? addedByUserId = null)
         {
+            await _access.RequireAsync(
+                _access.CanManageGroupAsync(groupId),
+                "Only the project owner can add members.");
+
             var existing = await _unitOfWork.Repository<GroupMember>()
                 .FindAsync(gm => gm.GroupId == groupId && gm.UserId == userId);
 
@@ -111,11 +142,78 @@ namespace Miqat.Application.Services
 
             var member = new GroupMember(groupId, userId);
             await _unitOfWork.Repository<GroupMember>().AddAsync(member);
-            return await _unitOfWork.CompleteAsync() > 0;
+
+            if (await _unitOfWork.CompleteAsync() <= 0) return false;
+
+            await NotifyMemberAddedAsync(groupId, userId, addedByUserId);
+            return true;
+        }
+
+        /// <summary>
+        /// Tells the new member they were added, the way Notion does when someone
+        /// adds you to a page.
+        ///
+        /// Deliberately non-fatal: the membership row is already committed by the
+        /// time this runs, so failing to notify must not turn a successful add
+        /// into an error for the caller.
+        /// </summary>
+        private async Task NotifyMemberAddedAsync(Guid groupId, Guid userId, Guid? addedByUserId)
+        {
+            // Nobody needs telling that they added themselves.
+            if (addedByUserId == userId) return;
+
+            try
+            {
+                var group = await _unitOfWork.Repository<Group>().GetByIdAsync(groupId);
+                if (group == null) return;
+
+                var actorName = "Someone";
+                if (addedByUserId.HasValue)
+                {
+                    var actor = await _unitOfWork.Repository<User>().GetByIdAsync(addedByUserId.Value);
+                    if (!string.IsNullOrWhiteSpace(actor?.FullName))
+                        actorName = actor!.FullName;
+                }
+
+                var notification = new Notification(
+                    title: "Added to a project",
+                    message: $"{actorName} added you to \"{group.Name}\".",
+                    type: Domain.Enumerations.NotificationType.GroupInvite,
+                    recipientUserId: userId,
+                    triggeredByUserId: addedByUserId,
+                    linkedEntityId: groupId,
+                    linkedEntityType: "Group"
+                );
+
+                await _unitOfWork.Repository<Notification>().AddAsync(notification);
+                await _unitOfWork.CompleteAsync();
+
+                await _realtime.NotifyUserAsync(userId, "notification", new
+                {
+                    title = notification.Title,
+                    message = notification.Message,
+                    type = "GroupInvite",
+                    linkedEntityId = groupId,
+                    linkedEntityType = "Group",
+                    triggeredByUserName = actorName
+                });
+            }
+            catch
+            {
+                // Swallowed on purpose — see the summary above.
+            }
         }
 
         public async Task<bool> RemoveMemberAsync(Guid groupId, Guid userId)
         {
+            // The owner can remove anyone; a member may remove themselves (leave).
+            if (_currentUser.UserId != userId)
+            {
+                await _access.RequireAsync(
+                    _access.CanManageGroupAsync(groupId),
+                    "Only the project owner can remove other members.");
+            }
+
             var existing = await _unitOfWork.Repository<GroupMember>()
                 .FindAsync(gm => gm.GroupId == groupId && gm.UserId == userId);
 
@@ -128,6 +226,9 @@ namespace Miqat.Application.Services
 
         public async Task<ApiResponse<PagedResult<MemberDto>>> GetGroupMembersPaged(Guid groupId, int pageIndex = 0, int pageSize = 20)
         {
+            await _access.RequireAsync(
+                _access.CanViewGroupAsync(groupId), "You do not have access to this project.");
+
             // Validate group exists
             var group = await _unitOfWork.Repository<Group>().GetByIdAsync(groupId);
             if (group == null) return ApiResponse<PagedResult<MemberDto>>.Fail("Group not found.");

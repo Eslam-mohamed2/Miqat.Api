@@ -29,6 +29,15 @@ namespace Miqat.API.Controllers
             return Ok(notifications);
         }
 
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged(
+            [FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 20)
+        {
+            var page = await _notificationService
+                .GetNotificationsPaged(GetCurrentUserId(), pageIndex, pageSize);
+            return Ok(page);
+        }
+
         [HttpGet("unread")]
         public async Task<IActionResult> GetUnread()
         {

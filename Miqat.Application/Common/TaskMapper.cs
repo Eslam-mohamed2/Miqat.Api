@@ -11,8 +11,18 @@ public partial class TaskMapper
     [MapProperty(nameof(TaskItem.Priority), nameof(TaskDto.Priority))]
     [MapProperty(nameof(TaskItem.Recurrence), nameof(TaskDto.Recurrence))]
 
-    // ← removed the nullable navigation MapProperty attributes
-    // ← Mapperly will call our private methods below instead
+    // The private Map*Name methods below are null-safe but marked
+    // [UserMapping(Default = false)], which tells Mapperly not to apply them on its
+    // own — so OwnerName, AssignedToUserName and GroupName were never populated and
+    // came back null on every task. MapPropertyFromSource wires each one up
+    // explicitly.
+    //
+    // Nested-path flattening (User.FullName) is NOT usable here: TaskItem declares
+    // User as non-nullable, so Mapperly emits an unguarded task.User.FullName, which
+    // throws on a freshly created entity whose navigation properties are not loaded.
+    [MapPropertyFromSource(nameof(TaskDto.OwnerName), Use = nameof(MapOwnerName))]
+    [MapPropertyFromSource(nameof(TaskDto.AssignedToUserName), Use = nameof(MapAssignedToUserName))]
+    [MapPropertyFromSource(nameof(TaskDto.GroupName), Use = nameof(MapGroupName))]
     public partial TaskDto MapToDto(TaskItem task);
 
     public partial IEnumerable<TaskDto> MapToDtos(IEnumerable<TaskItem> tasks);

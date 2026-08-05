@@ -66,7 +66,9 @@ namespace Miqat.API.Controllers
         [HttpPost("{groupId}/members/{userId}")]
         public async Task<IActionResult> AddMember(Guid groupId, Guid userId)
         {
-            var result = await _groupService.AddMemberAsync(groupId, userId);
+            // The actor is passed through so the new member's notification can say
+            // who added them rather than "Someone".
+            var result = await _groupService.AddMemberAsync(groupId, userId, GetCurrentUserId());
             if (!result) return BadRequest(new { message = "User is already a member." });
             return Ok(new { message = "Member added successfully." });
         }

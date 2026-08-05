@@ -47,12 +47,12 @@ namespace Miqat.infrastructure.persistence.Data.Seeds
                     dto.Description,
                     Guid.Parse(dto.UserId),
                     priority,
-                    DateTime.Parse(dto.DueDate),
+                    ParseUtc(dto.DueDate),
                     dto.AssignedToUserId != null ? Guid.Parse(dto.AssignedToUserId) : null,
                     dto.GroupId != null ? Guid.Parse(dto.GroupId) : null,
                     dto.Tags,
                     recurrence,
-                    dto.RecurrenceEndDate != null ? DateTime.Parse(dto.RecurrenceEndDate) : null
+                    ParseUtcOrNull(dto.RecurrenceEndDate)
                 );
 
                 SetId(task, Guid.Parse(dto.Id));

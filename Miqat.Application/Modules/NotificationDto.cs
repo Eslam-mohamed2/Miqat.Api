@@ -12,5 +12,8 @@ public class NotificationDto
     public string? TriggeredByUserName { get; set; }
     public Guid? LinkedEntityId { get; set; }
     public string? LinkedEntityType { get; set; }
+
+    /// <summary>Anchor within the linked task, when the notification is about a comment.</summary>
+    public Guid? LinkedCommentId { get; set; }
     public DateTime CreatedAt { get; set; }
 }

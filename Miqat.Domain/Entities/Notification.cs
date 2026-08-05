@@ -27,9 +27,22 @@ namespace Miqat.Domain.Entities
         public Guid? LinkedEntityId { get; set; }
         public string? LinkedEntityType { get; set; } // "TaskItem" | "Group"
 
+        /// <summary>
+        /// The comment this notification is about, when there is one.
+        /// <para>
+        /// Kept separate from <see cref="LinkedEntityId"/> rather than replacing
+        /// it: navigation and access checks both need the *task*, so the task
+        /// stays the linked entity and this is the anchor within it. Without it
+        /// a "new comment" notification could only drop you at the top of a
+        /// thread and leave you hunting for the comment it meant.
+        /// </para>
+        /// </summary>
+        public Guid? LinkedCommentId { get; set; }
+
         public Notification(string title, string message, NotificationType type,
                             Guid recipientUserId, Guid? triggeredByUserId = null,
-                            Guid? linkedEntityId = null, string? linkedEntityType = null)
+                            Guid? linkedEntityId = null, string? linkedEntityType = null,
+                            Guid? linkedCommentId = null)
         {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Title cannot be empty.", nameof(title));
@@ -41,6 +54,7 @@ namespace Miqat.Domain.Entities
             TriggeredByUserId = triggeredByUserId;
             LinkedEntityId = linkedEntityId;
             LinkedEntityType = linkedEntityType;
+            LinkedCommentId = linkedCommentId;
         }
 
         private Notification() { }

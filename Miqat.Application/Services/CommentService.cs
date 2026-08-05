@@ -65,7 +65,7 @@ namespace Miqat.Application.Services
             await _unitOfWork.CompleteAsync();
 
             await NotifyParticipantsAsync(taskId, authorId, comment);
-            await HandleMentionsAsync(taskId, authorId, mentionedUserIds);
+            await HandleMentionsAsync(taskId, authorId, mentionedUserIds, comment.Id);
 
             var author = await _unitOfWork.Repository<User>().GetByIdAsync(authorId);
             return MapToDto(comment, author);
@@ -119,7 +119,8 @@ namespace Miqat.Application.Services
                         recipientUserId: recipientId,
                         triggeredByUserId: authorId,
                         linkedEntityId: task.Id,
-                        linkedEntityType: "TaskItem"));
+                        linkedEntityType: "TaskItem",
+                        linkedCommentId: comment.Id));
                 }
 
                 if (recipients.Count > 0) await _unitOfWork.CompleteAsync();
@@ -131,6 +132,7 @@ namespace Miqat.Application.Services
                     type = "MentionedInTask",
                     linkedEntityId = task.Id,
                     linkedEntityType = "TaskItem",
+                    linkedCommentId = comment.Id,
                     triggeredByUserName = actorName
                 });
 
@@ -217,7 +219,7 @@ namespace Miqat.Application.Services
         /// otherwise be an invitation to a locked door.
         /// </summary>
         private async Task HandleMentionsAsync(
-            Guid taskId, Guid authorId, IEnumerable<Guid>? mentionedUserIds)
+            Guid taskId, Guid authorId, IEnumerable<Guid>? mentionedUserIds, Guid commentId)
         {
             var mentioned = (mentionedUserIds ?? Enumerable.Empty<Guid>())
                 .Where(id => id != Guid.Empty && id != authorId)
@@ -272,7 +274,8 @@ namespace Miqat.Application.Services
                         recipientUserId: userId,
                         triggeredByUserId: authorId,
                         linkedEntityId: taskId,
-                        linkedEntityType: "TaskItem"));
+                        linkedEntityType: "TaskItem",
+                        linkedCommentId: commentId));
                 }
 
                 await _unitOfWork.CompleteAsync();
@@ -284,6 +287,7 @@ namespace Miqat.Application.Services
                     type = "MentionedInTask",
                     linkedEntityId = taskId,
                     linkedEntityType = "TaskItem",
+                    linkedCommentId = commentId,
                     triggeredByUserName = actorName
                 });
             }

@@ -1,0 +1,88 @@
+# Local development stack: Postgres + the Miqat API.
+#
+# The API auto-applies EF migrations and seeds demo data on startup
+# (Program.cs), so a fresh `docker compose up` yields a working database with
+# no manual migration step.
+#
+# Secrets come from the .env file next to this one. Copy .env.example to .env.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: miqat-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-miqat}
+      POSTGRES_USER: ${POSTGRES_USER:-miqat}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports:
+      # Exposed so you can attach psql/pgAdmin from the host.
+      - "5432:5432"
+    volumes:
+      - miqat-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-miqat} -d ${POSTGRES_DB:-miqat}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+    container_name: miqat-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        # Waits for Postgres to actually accept connections, not just to start.
+        # Without this the API races the database and its migration step fails.
+        condition: service_healthy
+    ports:
+      - "10000:10000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:10000
+
+      # Demo accounts, projects and tasks — local only, and set here rather than
+      # in appsettings.Development.json because that file is not published into
+      # the image. It must never be true on a deployed environment: the seed data
+      # includes an Admin whose password is committed to this repository.
+      Seed__DemoData: "true"
+      Swagger__Enabled: "true"
+
+      # `__` is .NET's separator for nested configuration keys, so this maps onto
+      # ConnectionStrings:DefaultConnection and overrides the blank appsettings value.
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Port=5432;Database=${POSTGRES_DB:-miqat};Username=${POSTGRES_USER:-miqat};Password=${POSTGRES_PASSWORD}
+
+      JwtSettings__SecretKey: ${JWT_SECRET_KEY:?set JWT_SECRET_KEY in .env}
+      JwtSettings__Issuer: Miqat.API
+      JwtSettings__Audience: Miqat.Client
+      JwtSettings__AccessTokenExpiryMinutes: "15"
+      JwtSettings__RefreshTokenExpiryDays: "7"
+
+      # Must match the client ID the Angular app signs in with, otherwise Google
+      # token audience validation rejects every sign-in.
+      GoogleAuthSettings__ClientId: ${GOOGLE_CLIENT_ID:-}
+      GoogleAuthSettings__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}
+
+      # Mail goes through Brevo (sib_api_v3_sdk); EmailSettings:ApiKey is what
+      # switches it on. With it blank the send throws, the caller catches it, and
+      # the code is logged as "[Dev OTP] <email> | Code: NNNNNN" instead — read it
+      # with `docker logs miqat-api`. The endpoint still answers 200 either way,
+      # so a missing key looks like success from the browser.
+      EmailSettings__ApiKey: ${EMAIL_API_KEY:-}
+      EmailSettings__FromEmail: ${EMAIL_FROM:-}
+      EmailSettings__FromName: ${EMAIL_FROM_NAME:-Miqat}
+      EmailSettings__SmtpHost: ${EMAIL_SMTP_HOST:-}
+      EmailSettings__SmtpPort: ${EMAIL_SMTP_PORT:-587}
+      EmailSettings__SmtpUseSsl: ${EMAIL_SMTP_USE_SSL:-false}
+      EmailSettings__SmtpUsername: ${EMAIL_SMTP_USERNAME:-}
+      EmailSettings__SmtpPassword: ${EMAIL_SMTP_PASSWORD:-}
+
+      # Profile-picture upload. Blank => the endpoint answers 503 with a clear
+      # message rather than failing as a 500.
+      AzureStorage__ConnectionString: ${AZURE_STORAGE_CONNECTION:-}
+      AzureStorage__ContainerName: ${AZURE_STORAGE_CONTAINER:-user-images}
+
+volumes:
+  miqat-pgdata:

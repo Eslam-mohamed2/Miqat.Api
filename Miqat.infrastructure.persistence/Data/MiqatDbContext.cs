@@ -23,6 +23,8 @@ namespace Miqat.infrastructure.persistence.Data
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
         public DbSet<Friendship> Friendships => Set<Friendship>();
         public DbSet<Mention> Mentions => Set<Mention>();
+        public DbSet<Comment> Comments => Set<Comment>();
+        public DbSet<Board> Boards => Set<Board>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

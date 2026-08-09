@@ -35,7 +35,7 @@ namespace Miqat.infrastructure.persistence.Data.Seeds
 
             var entities = dtos.Select(dto =>
             {
-                var dob = DateTime.Parse(dto.DateOfBirth);
+                var dob = ParseUtc(dto.DateOfBirth);
                 var gender = Enum.Parse<Gender>(dto.Gender == "M" ? "Male" : "Female");
                 var role = Enum.Parse<UserRole>(dto.Role);
 

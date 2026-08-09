@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Miqat.Application.Common;
 using Miqat.Application.Interfaces;
 using Miqat.Application.Modules;
@@ -25,6 +26,7 @@ namespace Miqat.API.Controllers
                 : HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
         [HttpPost("login")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
             try
@@ -82,6 +84,7 @@ namespace Miqat.API.Controllers
         }
 
         [HttpPost("register")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
         {
             try
@@ -96,6 +99,7 @@ namespace Miqat.API.Controllers
         }
 
         [HttpPost("verify-otp")]
+        [EnableRateLimiting("otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto request)
         {
             try
@@ -110,6 +114,7 @@ namespace Miqat.API.Controllers
         }
 
         [HttpPost("forgot-password")]
+        [EnableRateLimiting("otp")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto request)
         {
             try
@@ -124,6 +129,7 @@ namespace Miqat.API.Controllers
         }
 
         [HttpPost("reset-password")]
+        [EnableRateLimiting("otp")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
         {
             try
@@ -138,6 +144,7 @@ namespace Miqat.API.Controllers
         }
 
         [HttpPost("google")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto request)
         {
             try
@@ -152,6 +159,7 @@ namespace Miqat.API.Controllers
         }
 
         [HttpPost("resend-otp")]
+        [EnableRateLimiting("otp")]
         public async Task<IActionResult> ResendOtp([FromBody] ResendOtpDto request)
         {
             try
@@ -166,6 +174,7 @@ namespace Miqat.API.Controllers
         }
 
         [HttpPost("change-password")]
+        [EnableRateLimiting("otp")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto request)
         {

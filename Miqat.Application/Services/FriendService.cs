@@ -12,11 +12,18 @@ namespace Miqat.Application.Services
         private readonly INotificationService _notificationService;
         private readonly UserMapper _userMapper;
 
-        public FriendService(IUnitOfWork unitOfWork, INotificationService notificationService, UserMapper userMapper)
+        private readonly IRealtimeNotifier _realtime;
+
+        public FriendService(
+            IUnitOfWork unitOfWork,
+            INotificationService notificationService,
+            UserMapper userMapper,
+            IRealtimeNotifier realtime)
         {
             _unitOfWork = unitOfWork;
             _notificationService = notificationService;
             _userMapper = userMapper;
+            _realtime = realtime;
         }
 
         public async Task<FriendshipDto> SendFriendRequestAsync(Guid senderId, Guid receiverId)
@@ -49,7 +56,7 @@ namespace Miqat.Application.Services
             var notification = new Notification(
                 title: "New Friend Request",
                 message: $"{sender.FullName} sent you a friend request.",
-                type: NotificationType.TaskAssigned,
+                type: NotificationType.FriendRequestSent,
                 recipientUserId: receiverId,
                 triggeredByUserId: senderId,
                 linkedEntityId: friendship.Id,
@@ -57,6 +64,16 @@ namespace Miqat.Application.Services
             );
             await _unitOfWork.Repository<Notification>().AddAsync(notification);
             await _unitOfWork.CompleteAsync();
+
+            await _realtime.NotifyUserAsync(receiverId, "notification", new
+            {
+                title = notification.Title,
+                message = notification.Message,
+                type = "FriendRequestSent",
+                linkedEntityId = friendship.Id,
+                linkedEntityType = "Friendship",
+                triggeredByUserName = sender.FullName
+            });
 
             return MapToDto(friendship, sender, receiver);
         }
@@ -81,7 +98,7 @@ namespace Miqat.Application.Services
             var notification = new Notification(
                 title: "Friend Request Accepted",
                 message: $"{receiver?.FullName} accepted your friend request.",
-                type: NotificationType.TaskCompleted,
+                type: NotificationType.FriendRequestAccepted,
                 recipientUserId: friendship.SenderId,
                 triggeredByUserId: receiverId,
                 linkedEntityId: friendship.Id,
@@ -89,6 +106,16 @@ namespace Miqat.Application.Services
             );
             await _unitOfWork.Repository<Notification>().AddAsync(notification);
             await _unitOfWork.CompleteAsync();
+
+            await _realtime.NotifyUserAsync(friendship.SenderId, "notification", new
+            {
+                title = notification.Title,
+                message = notification.Message,
+                type = "FriendRequestAccepted",
+                linkedEntityId = friendship.Id,
+                linkedEntityType = "Friendship",
+                triggeredByUserName = receiver?.FullName
+            });
 
             return true;
         }

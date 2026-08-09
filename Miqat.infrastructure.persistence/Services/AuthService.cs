@@ -154,15 +154,15 @@ namespace Miqat.infrastructure.persistence.Services
             await _unitOfWork.Repository<OtpCode>().AddAsync(otp);
             await _unitOfWork.CompleteAsync();
 
-            try
-            {
-                await _emailService.SendOtpAsync(user.Email, user.FullName, otpCode);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Email] Failed: {ex.Message}");
-                Console.WriteLine($"[Dev OTP] {user.Email} | Code: {otpCode}");
-            }
+            // The account now exists either way, so a delivery failure must be
+            // reported rather than swallowed: telling the caller "check your
+            // email" when nothing was sent leaves them stuck on a screen waiting
+            // for a code that is never coming.
+            if (!await TrySendOtpEmailAsync(user, otpCode, "EmailVerification"))
+                throw new ApiException(
+                    "Your account was created, but the verification email could not be sent. " +
+                    "Use \"Resend code\" in a moment, or contact support.", 502);
+
             return true;
         }
 
@@ -204,9 +204,18 @@ namespace Miqat.infrastructure.persistence.Services
                     throw new ApiException(
                         "OTP has expired. Please request a new code.", 400);
 
-                // 6. Mark OTP as used
-                otp.MarkAsUsed();
-                _unitOfWork.Repository<OtpCode>().Update(otp);
+                // 6. Mark OTP as used — but only for EmailVerification.
+                //
+                // A password reset is two calls: verify-otp to check the code, then
+                // reset-password to actually change it. reset-password looks for an
+                // *unused* OTP with that code, so consuming it here made every reset
+                // fail with "Invalid OTP" — the reset flow could never complete.
+                // The code is still single-use overall; reset-password consumes it.
+                if (purpose == "EmailVerification")
+                {
+                    otp.MarkAsUsed();
+                    _unitOfWork.Repository<OtpCode>().Update(otp);
+                }
 
                 // 7. Only mark user as verified for EmailVerification purpose
                 if (purpose == "EmailVerification")
@@ -273,17 +282,15 @@ namespace Miqat.infrastructure.persistence.Services
             await _unitOfWork.Repository<OtpCode>().AddAsync(otp);
             await _unitOfWork.CompleteAsync();
 
-            try
-            {
-                await _emailService.SendPasswordResetOtpAsync(
-                    user.Email, user.FullName, otpCode);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Email] Failed: {ex.Message}");
-                Console.WriteLine(
-                    $"[Dev OTP] Email: {user.Email} | PasswordReset | Code: {otpCode}");
-            }
+            // Trade-off, made deliberately: a transport failure is reported even
+            // though the "user not found" path above returns success, which means
+            // that while the mail relay is down an attacker could tell a real
+            // address from a fake one. That window only exists while the feature
+            // is already broken, and it is strictly better than showing the user
+            // a success screen for an email that was never sent.
+            if (!await TrySendOtpEmailAsync(user, otpCode, "PasswordReset"))
+                throw new ApiException(
+                    "We could not send the reset email right now. Please try again shortly.", 502);
 
             return true;
         }
@@ -359,23 +366,43 @@ namespace Miqat.infrastructure.persistence.Services
             await _unitOfWork.Repository<OtpCode>().AddAsync(otp);
             await _unitOfWork.CompleteAsync();
 
+            // This endpoint already 404s for an unknown address, so reporting a
+            // delivery failure here reveals nothing that was not public already.
+            if (!await TrySendOtpEmailAsync(user, otpCode, request.Purpose))
+                throw new ApiException(
+                    "We could not send the code right now. Please try again shortly.", 502);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Sends an OTP and reports whether it actually left the building.
+        ///
+        /// Every caller used to wrap this in a catch that logged and carried on,
+        /// so a dead mail relay produced a 200 and a green "code sent" banner
+        /// while nothing was delivered. The code is still written to the log on
+        /// failure so local development works without a mail provider — but the
+        /// caller is now told, and decides what the user sees.
+        /// </summary>
+        private async Task<bool> TrySendOtpEmailAsync(User user, string otpCode, string purpose)
+        {
             try
             {
-                if (request.Purpose == "EmailVerification")
-                    await _emailService.SendOtpAsync(
-                        user.Email, user.FullName, otpCode);
-                else
+                if (purpose == "PasswordReset")
                     await _emailService.SendPasswordResetOtpAsync(
                         user.Email, user.FullName, otpCode);
+                else
+                    await _emailService.SendOtpAsync(
+                        user.Email, user.FullName, otpCode);
+
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Email] Failed: {ex.Message}");
-                Console.WriteLine(
-                    $"[Dev OTP] {user.Email} | {request.Purpose} | Code: {otpCode}");
+                Console.WriteLine($"[Dev OTP] {user.Email} | {purpose} | Code: {otpCode}");
+                return false;
             }
-
-            return true;
         }
 
         // ── Change Password ───────────────────────────────────────────────────

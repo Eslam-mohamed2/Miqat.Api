@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Task = System.Threading.Tasks.Task;
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace Miqat.infrastructure.persistence.Services
@@ -185,8 +187,58 @@ namespace Miqat.infrastructure.persistence.Services
                 return;
             }
 
-            _logger.LogError("No email provider configured. Set ApiKey in EmailSettings.");
-            throw new InvalidOperationException("No email provider configured. Set ApiKey in EmailSettings.");
+            // SMTP. EmailSettings has always documented this as the recommended
+            // path ("If SMTP settings are provided, SMTP will be used instead"),
+            // but it was never implemented — only the API-key branch above existed.
+            // A deployment that set SmtpHost/SmtpUsername/SmtpPassword and left
+            // ApiKey empty therefore sent nothing at all, while the calling
+            // endpoints swallowed the failure and still answered 200.
+            if (!string.IsNullOrWhiteSpace(_settings.SmtpHost))
+            {
+                using var message = new MailMessage
+                {
+                    From = new MailAddress(_settings.FromEmail, _settings.FromName),
+                    Subject = subject,
+                    Body = htmlBody,
+                    IsBodyHtml = true
+                };
+                message.To.Add(new MailAddress(toEmail, toName));
+
+                if (!string.IsNullOrWhiteSpace(textBody))
+                {
+                    // A plain-text alternative keeps the message out of spam
+                    // filters that penalise HTML-only mail.
+                    message.AlternateViews.Add(
+                        AlternateView.CreateAlternateViewFromString(textBody, null, "text/plain"));
+                    message.AlternateViews.Add(
+                        AlternateView.CreateAlternateViewFromString(htmlBody, null, "text/html"));
+                }
+
+                using var client = new System.Net.Mail.SmtpClient(_settings.SmtpHost, _settings.SmtpPort);
+
+                // Order matters: assigning UseDefaultCredentials *after* Credentials
+                // resets Credentials to null, so the client connects unauthenticated
+                // and Brevo answers "5.7.0 Please authenticate first".
+                client.UseDefaultCredentials = false;
+                client.Credentials = new NetworkCredential(_settings.SmtpUsername, _settings.SmtpPassword);
+                client.DeliveryMethod = SmtpDeliveryMethod.Network;
+
+                // Brevo's relay needs STARTTLS on 587 and implicit TLS on 465.
+                // SmtpUseSsl is commonly left false for 587 because it reads as
+                // "not implicit SSL", so the port decides rather than the flag.
+                client.EnableSsl = _settings.SmtpUseSsl
+                    || _settings.SmtpPort == 587
+                    || _settings.SmtpPort == 465;
+                client.Timeout = 20_000;
+
+                await client.SendMailAsync(message);
+                _logger.LogInformation("Email sent to {Email} via SMTP ({Host})", toEmail, _settings.SmtpHost);
+                return;
+            }
+
+            _logger.LogError("No email provider configured. Set EmailSettings:ApiKey or EmailSettings:SmtpHost.");
+            throw new InvalidOperationException(
+                "No email provider configured. Set EmailSettings:ApiKey or EmailSettings:SmtpHost.");
         }
     }
 }

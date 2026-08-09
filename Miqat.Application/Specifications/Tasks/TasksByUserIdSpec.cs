@@ -11,7 +11,10 @@ namespace Miqat.Application.Specifications.Tasks
     public class TasksByUserIdSpec : BaseSpecification<TaskItem>
     {
         public TasksByUserIdSpec(Guid userId)
-            : base(t => t.UserId == userId && !t.IsDeleted)
+                        // "My tasks" must mean created by me OR assigned to me. Matching the
+            // creator only meant work a teammate handed you never appeared on
+            // your own task list — it was only visible inside the project view.
+            : base(t => (t.UserId == userId || t.AssignedToUserId == userId) && !t.IsDeleted)
         {
             AddInclude(t => t.User);
             AddInclude(t => t.AssignedToUser!);

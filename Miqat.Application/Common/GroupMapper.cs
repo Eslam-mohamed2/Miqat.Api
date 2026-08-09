@@ -10,12 +10,16 @@ public partial class GroupMapper
     [MapperIgnoreTarget(nameof(GroupDto.OwnerName))]
     [MapperIgnoreTarget(nameof(GroupDto.MemberCount))]
     [MapperIgnoreTarget(nameof(GroupDto.TaskCount))]
+    [MapperIgnoreTarget(nameof(GroupDto.CompletedTaskCount))]
     private partial GroupDto MapToDtoInternal(Group group);
 
     public GroupDto MapToDto(Group group)
     {
         var dto = MapToDtoInternal(group);
         dto.OwnerName = group.Owner?.FullName;
+        // Only meaningful when the caller loaded these navigations. List
+        // endpoints attach real counts afterwards — see GroupService — because
+        // FindAsync does not include them and every card read 0.
         dto.MemberCount = group.Members?.Count ?? 0;
         dto.TaskCount = group.Tasks?.Count ?? 0;
         return dto;

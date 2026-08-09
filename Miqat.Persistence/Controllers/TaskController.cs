@@ -13,10 +13,12 @@ namespace Miqat.API.Controllers
     public class TaskController : ControllerBase
     {
         private readonly ITaskService _taskService;
+        private readonly ICommentService _commentService;
 
-        public TaskController(ITaskService taskService)
+        public TaskController(ITaskService taskService, ICommentService commentService)
         {
             _taskService = taskService;
+            _commentService = commentService;
         }
 
         private Guid GetCurrentUserId() =>
@@ -53,6 +55,36 @@ namespace Miqat.API.Controllers
         {
             var tasks = await _taskService.GetTasksByGroup(groupId);
             return Ok(tasks);
+        }
+
+        [HttpGet("{taskId}/comments")]
+        public async Task<IActionResult> GetComments(Guid taskId)
+        {
+            var comments = await _commentService.GetForTaskAsync(taskId);
+            return Ok(comments);
+        }
+
+        [HttpPost("{taskId}/comments")]
+        public async Task<IActionResult> AddComment(Guid taskId, [FromBody] CreateCommentDto dto)
+        {
+            var comment = await _commentService.AddAsync(taskId, dto.Content, dto.MentionedUserIds);
+            return CreatedAtAction(nameof(GetComments), new { taskId }, comment);
+        }
+
+        /// <summary>Feeds the @-picker in the comment composer.</summary>
+        [HttpGet("{taskId}/mentionable")]
+        public async Task<IActionResult> GetMentionable(Guid taskId)
+        {
+            var people = await _commentService.GetMentionableAsync(taskId);
+            return Ok(people);
+        }
+
+        [HttpDelete("comments/{commentId}")]
+        public async Task<IActionResult> DeleteComment(Guid commentId)
+        {
+            var result = await _commentService.DeleteAsync(commentId);
+            if (!result) return NotFound(new { message = "Comment not found." });
+            return NoContent();
         }
 
         [HttpGet("{id}")]

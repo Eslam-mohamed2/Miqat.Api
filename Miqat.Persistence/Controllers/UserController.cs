@@ -48,10 +48,14 @@ namespace Miqat.API.Controllers
             return Ok(users);
         }
 
+        // Takes UpdateProfileDto, not UserDto. With UserDto the UserValidator
+        // demanded an Email the profile form never sends, so every save returned
+        // 400 "Email is required" — and had one been sent, the update would have
+        // changed the user's login address as a side effect.
         [HttpPut("me")]
-        public async Task<IActionResult> UpdateMe([FromBody] UserDto dto)
+        public async Task<IActionResult> UpdateMe([FromBody] UpdateProfileDto dto)
         {
-            var result = await _userService.UpdateAsync(GetCurrentUserId(), dto);
+            var result = await _userService.UpdateProfileAsync(GetCurrentUserId(), dto);
             if (!result) return NotFound(new { message = "User not found." });
             return NoContent();
         }
@@ -77,6 +81,16 @@ namespace Miqat.API.Controllers
         [HttpPost("upload-profile-image")]
         public async Task<IActionResult> UploadProfileImage(IFormFile file)
         {
+            // Storage being unconfigured is a deployment state, not a server fault,
+            // so it answers 503 with something the UI can show instead of a bare 500.
+            if (!_blobStorageService.IsConfigured)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+                {
+                    message = "Profile image upload is not available: image storage is not configured."
+                });
+            }
+
             try
             {
                 // Upload to Azure Blob Storage

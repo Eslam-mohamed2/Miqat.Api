@@ -13,6 +13,47 @@ cd ~/dev/Front-End/Miqat      && git push origin main   # triggers Vercel deploy
 
 The backend workflow runs the 13 unit tests before publishing.
 
+
+## 0b. Exact App Service settings diff (audited 2026-08-05)
+
+Everything below was checked against the live values you exported.
+
+### Broken — production cannot work until these change
+
+| Setting | Why | Action |
+|---|---|---|
+| `ConnectionStrings__DefaultConnection` | Pooler host resolves, but the project is deleted: `FATAL: (ENOTFOUND) tenant/user postgres.qyidgptrxjzweuczxyvq not found` | Point at a new Postgres |
+| `EmailSettings__SmtpPassword` | Ends `…X1qhO7hZlgTPVh9Y` — the revoked key. Returns `535 Authentication failed` | Paste the reissued key (ends `…sEVGnmEif0VPmJk8`) |
+
+### Rotate — valid, but exposed in a chat transcript
+
+| Setting | Note |
+|---|---|
+| `JwtSettings__SecretKey` | Also human-authored and guessable in shape. A fresh value is in `.azure-jwt-secret.txt` (gitignored) |
+| `AzureStorage__ConnectionString` | The account key works — a profile upload against it succeeded during testing. Rotate key1 in the portal and repaste |
+| `GoogleAuthSettings__ClientSecret` | Reset it in Google Cloud Console -> Credentials |
+
+### Correct — leave alone
+
+`ASPNETCORE_ENVIRONMENT=Production`, `AzureStorage__ContainerName`,
+`EmailSettings__FromEmail`, `__FromName`, `__SmtpHost`, `__SmtpPort`,
+`__SmtpUsername`, `__SmtpUseSsl`, `GoogleAuthSettings__ClientId`,
+`JwtSettings__Issuer`, `__Audience`, `__AccessTokenExpiryMinutes`,
+`__RefreshTokenExpiryDays`.
+
+### Correctly absent — do NOT add
+
+`Seed__DemoData` and `Swagger__Enabled` are missing, which is exactly right:
+`GetValue<bool>` returns false for an absent key, so demo accounts and Swagger
+are both off. Adding them set to `true` would create sign-in-able seed accounts
+in production.
+
+### Worth adding
+
+| Setting | Why |
+|---|---|
+| `EmailSettings__ApiKey` | Currently empty. A Brevo **API key** here sidesteps the SMTP IP allowlist entirely — it is plain HTTPS, so no `525 Unauthorized IP`. The code prefers this path when set. This is the least-effort fix for OTP. |
+
 ## 1. Database (hard blocker — the old Supabase project is deleted)
 
 Create a Postgres 16 instance (Supabase free / Neon free / Azure Flexible Server).
@@ -57,6 +98,30 @@ in production (they now get an honest 502, not a fake success).
 - Confirm `Seed__DemoData` is **absent or false** (defaults to off; the startup
   log must show: `Demo data disabled (Seed:DemoData is not true)`)
 - Confirm `ASPNETCORE_ENVIRONMENT` is **not** `Development`
+
+## 4b. Azure Blob CORS (needed for profile-banner colours)
+
+The profile banner samples its colours from the user's picture, in the browser.
+Reading pixels from an image requires the host to send CORS headers; Azure Blob
+Storage sends none by default, so today every uploaded avatar falls back to the
+generated gradient. Confirmed in the browser console:
+
+    Access to image at 'https://miqatblob.blob.core.windows.net/user-images/...' blocked
+
+Portal -> Storage account (miqatblob) -> **Resource sharing (CORS)** -> Blob service,
+add one rule:
+
+| field | value |
+|---|---|
+| Allowed origins | your frontend origin(s), e.g. `https://miqatsmartcalendar.vercel.app` |
+| Allowed methods | GET, HEAD |
+| Allowed headers | `*` |
+| Exposed headers | `*` |
+| Max age | 3600 |
+
+Nothing breaks without this — the avatar still displays, the banner just uses
+its fallback. Google-hosted avatars (Google sign-in) already work, because that
+CDN does send the header.
 
 ## 5. First-boot verification checklist
 

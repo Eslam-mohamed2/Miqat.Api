@@ -24,6 +24,7 @@ namespace Miqat.infrastructure.persistence.Data
         public DbSet<Friendship> Friendships => Set<Friendship>();
         public DbSet<Mention> Mentions => Set<Mention>();
         public DbSet<Comment> Comments => Set<Comment>();
+        public DbSet<Board> Boards => Set<Board>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

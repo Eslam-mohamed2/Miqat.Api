@@ -494,3 +494,7 @@ M i q a t . P e r s i s t e n c e / a p p s e t t i n g s . j s o n  
 # are untracked as of the production-hardening pass.
 **/bin/
 **/obj/
+
+# Drop-file for handing the production DB connection string to tooling
+# without pasting it into a chat or shell history. Never commit.
+.newdb-conn.txt

@@ -31,5 +31,9 @@ namespace Miqat.infrastructure.persistence.Data.Seeds
                   .BaseType!
                   .GetProperty("Id")!
                   .SetValue(entity, id);
+
+        // Npgsql only accepts UTC DateTimes for timestamptz columns
+        protected static DateTime ParseUtc(string value) =>
+            DateTime.SpecifyKind(DateTime.Parse(value), DateTimeKind.Utc);
     }
 }

@@ -173,6 +173,13 @@ builder.Services.AddSingleton<CallRegistry>();
 builder.Services.AddSingleton(
     builder.Configuration.GetSection("Calls").Get<CallSettings>() ?? new CallSettings());
 
+// The relay for calls between devices that cannot reach each other directly.
+// Does nothing until Calls:Relay:Url is set. A short timeout: a call must not
+// wait on it. The built-in request logging is removed for this one client:
+// it writes the whole address, and with some services the key is part of it.
+builder.Services.AddHttpClient<IRelayAccess, HostedRelayAccess>(client => client.Timeout = TimeSpan.FromSeconds(6))
+    .RemoveAllLoggers();
+
 // Shared by several modules: who is connected to whom, and the one place
 // notifications and live updates are sent from.
 builder.Services.AddScoped<PeopleDirectory>();

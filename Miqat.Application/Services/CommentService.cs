@@ -11,21 +11,26 @@ namespace Miqat.Application.Services
 {
     public class CommentService : ICommentService
     {
+        private const int MaxCommentLength = 2000;
+
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAccessPolicy _access;
         private readonly ICurrentUserService _currentUser;
         private readonly IRealtimeNotifier _realtime;
+        private readonly INotificationSender _notifications;
 
         public CommentService(
             IUnitOfWork unitOfWork,
             IAccessPolicy access,
             ICurrentUserService currentUser,
-            IRealtimeNotifier realtime)
+            IRealtimeNotifier realtime,
+            INotificationSender notifications)
         {
             _unitOfWork = unitOfWork;
             _access = access;
             _currentUser = currentUser;
             _realtime = realtime;
+            _notifications = notifications;
         }
 
         public async Task<IEnumerable<CommentDto>> GetForTaskAsync(Guid taskId)
@@ -44,7 +49,8 @@ namespace Miqat.Application.Services
 
             return comments
                 .OrderBy(c => c.CreatedAt)
-                .Select(c => MapToDto(c, authors.GetValueOrDefault(c.AuthorId)));
+                .Select(c => MapToDto(c, authors.GetValueOrDefault(c.AuthorId)))
+                .ToList();
         }
 
         public async Task<CommentDto> AddAsync(
@@ -55,12 +61,9 @@ namespace Miqat.Application.Services
             await _access.RequireAsync(
                 _access.CanViewTaskAsync(taskId), "You do not have access to this task.");
 
-            if (string.IsNullOrWhiteSpace(content))
-                throw new ApiException("A comment cannot be empty.", 400);
-            if (content.Length > 2000)
-                throw new ApiException("Comments are limited to 2000 characters.", 400);
+            var text = ValidateContent(content);
 
-            var comment = new Comment(content.Trim(), taskId, authorId);
+            var comment = new Comment(text, taskId, authorId);
             await _unitOfWork.Repository<Comment>().AddAsync(comment);
             await _unitOfWork.CompleteAsync();
 
@@ -71,6 +74,31 @@ namespace Miqat.Application.Services
             return MapToDto(comment, author);
         }
 
+        public async Task<CommentDto?> UpdateAsync(Guid commentId, string content)
+        {
+            var comment = await _unitOfWork.Repository<Comment>().GetByIdAsync(commentId);
+            if (comment == null || comment.IsDeleted) return null;
+
+            // Editing is narrower than deleting: an admin may remove a comment,
+            // but nobody rewrites what someone else said.
+            var me = _currentUser.RequireUserId();
+            if (comment.AuthorId != me)
+                throw new ApiException("Only the comment's author can edit it.", 403);
+
+            // Losing access to the task ends the right to change its discussion.
+            await _access.RequireAsync(
+                _access.CanViewTaskAsync(comment.TaskId), "You do not have access to this task.");
+
+            comment.Content = ValidateContent(content);
+            comment.SetUpdated(me.ToString());
+            await _unitOfWork.CompleteAsync();
+
+            await RefreshThreadAsync(comment.TaskId, me);
+
+            var author = await _unitOfWork.Repository<User>().GetByIdAsync(me);
+            return MapToDto(comment, author);
+        }
+
         public async Task<bool> DeleteAsync(Guid commentId)
         {
             var comment = await _unitOfWork.Repository<Comment>().GetByIdAsync(commentId);
@@ -78,12 +106,51 @@ namespace Miqat.Application.Services
 
             // Only the author may retract what they wrote; the task's visibility
             // rules do not extend to erasing someone else's words.
-            if (!_currentUser.IsAdmin && comment.AuthorId != _currentUser.RequireUserId())
+            var me = _currentUser.RequireUserId();
+            if (!_currentUser.IsAdmin && comment.AuthorId != me)
                 throw new ApiException("Only the comment's author can delete it.", 403);
 
-            comment.SoftDelete();
-            _unitOfWork.Repository<Comment>().Update(comment);
-            return await _unitOfWork.CompleteAsync() > 0;
+            comment.SoftDelete(me.ToString());
+            await _unitOfWork.CompleteAsync();
+
+            await RefreshThreadAsync(comment.TaskId, me);
+            return true;
+        }
+
+        private static string ValidateContent(string? content)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+                throw new ApiException("A comment cannot be empty.", 400);
+
+            var text = content.Trim();
+            if (text.Length > MaxCommentLength)
+                throw new ApiException($"Comments are limited to {MaxCommentLength} characters.", 400);
+
+            return text;
+        }
+
+        /// <summary>
+        /// Tells anyone who may have the thread open (the task's creator and
+        /// assignee, and the actor's other tabs) to reload it. The client reloads
+        /// the whole thread on "commentAdded", so the same event serves edits and
+        /// deletions. Best-effort.
+        /// </summary>
+        private async Task RefreshThreadAsync(Guid taskId, Guid actorId)
+        {
+            try
+            {
+                var task = await _unitOfWork.Repository<TaskItem>().GetByIdAsync(taskId);
+                if (task == null) return;
+
+                var audience = new HashSet<Guid> { actorId, task.UserId };
+                if (task.AssignedToUserId.HasValue) audience.Add(task.AssignedToUserId.Value);
+
+                await _realtime.NotifyUsersAsync(audience, "commentAdded", new { taskId });
+            }
+            catch
+            {
+                // Best-effort — the change itself is already saved.
+            }
         }
 
         /// <summary>
@@ -98,9 +165,6 @@ namespace Miqat.Application.Services
                 var task = await _unitOfWork.Repository<TaskItem>().GetByIdAsync(taskId);
                 if (task == null) return;
 
-                var author = await _unitOfWork.Repository<User>().GetByIdAsync(authorId);
-                var actorName = string.IsNullOrWhiteSpace(author?.FullName) ? "Someone" : author!.FullName;
-
                 var recipients = new HashSet<Guid>();
                 if (task.UserId != authorId) recipients.Add(task.UserId);
                 if (task.AssignedToUserId.HasValue && task.AssignedToUserId.Value != authorId)
@@ -110,31 +174,12 @@ namespace Miqat.Application.Services
                     ? comment.Content[..77] + "…"
                     : comment.Content;
 
-                foreach (var recipientId in recipients)
-                {
-                    await _unitOfWork.Repository<Notification>().AddAsync(new Notification(
-                        title: "New comment",
-                        message: $"{actorName} commented on \"{task.Title}\": {preview}",
-                        type: Domain.Enumerations.NotificationType.MentionedInTask,
-                        recipientUserId: recipientId,
-                        triggeredByUserId: authorId,
-                        linkedEntityId: task.Id,
-                        linkedEntityType: "TaskItem",
-                        linkedCommentId: comment.Id));
-                }
-
-                if (recipients.Count > 0) await _unitOfWork.CompleteAsync();
-
-                await _realtime.NotifyUsersAsync(recipients, "notification", new
-                {
-                    title = "New comment",
-                    message = $"{actorName} commented on \"{task.Title}\"",
-                    type = "MentionedInTask",
-                    linkedEntityId = task.Id,
-                    linkedEntityType = "TaskItem",
-                    linkedCommentId = comment.Id,
-                    triggeredByUserName = actorName
-                });
+                await _notifications.SendAsync(
+                    new NotificationContent(
+                        Domain.Enumerations.NotificationType.MentionedInTask, "New comment",
+                        actor => $"{actor} commented on \"{task.Title}\": {preview}",
+                        authorId, task.Id, "TaskItem", comment.Id),
+                    recipients);
 
                 // Anyone with the thread open — participants and the author's
                 // other tabs — reloads it live.
@@ -196,7 +241,8 @@ namespace Miqat.Application.Services
                 Note(friendship.SenderId == me ? friendship.ReceiverId : friendship.SenderId, "Friend");
 
             var ids = relationships.Keys.ToHashSet();
-            var users = await _unitOfWork.Repository<User>().FindAsync(u => ids.Contains(u.Id));
+            var users = await _unitOfWork.Repository<User>()
+                .FindAsync(u => ids.Contains(u.Id) && !u.IsDeleted && u.IsActive);
 
             return users
                 .Select(user => new MentionableUserDto
@@ -209,7 +255,8 @@ namespace Miqat.Application.Services
                     HasAccess = withAccess.Contains(user.Id)
                 })
                 .OrderBy(u => u.Relationship == "Friend" ? 1 : 0)
-                .ThenBy(u => u.FullName);
+                .ThenBy(u => u.FullName)
+                .ToList();
         }
 
         /// <summary>
@@ -221,19 +268,24 @@ namespace Miqat.Application.Services
         private async Task HandleMentionsAsync(
             Guid taskId, Guid authorId, IEnumerable<Guid>? mentionedUserIds, Guid commentId)
         {
-            var mentioned = (mentionedUserIds ?? Enumerable.Empty<Guid>())
+            var requested = (mentionedUserIds ?? Enumerable.Empty<Guid>())
                 .Where(id => id != Guid.Empty && id != authorId)
                 .Distinct()
                 .ToList();
-            if (mentioned.Count == 0) return;
+            if (requested.Count == 0) return;
 
             try
             {
+                // Only people who can actually be mentioned here. The ids come
+                // from the client, so without this check anyone could be sent a
+                // notification - or, through the access grant below, be added to
+                // a project - by posting their id.
+                var allowed = (await GetMentionableAsync(taskId)).Select(u => u.UserId).ToHashSet();
+                var mentioned = requested.Where(allowed.Contains).ToList();
+                if (mentioned.Count == 0) return;
+
                 var task = await _unitOfWork.Repository<TaskItem>().GetByIdAsync(taskId);
                 if (task == null) return;
-
-                var author = await _unitOfWork.Repository<User>().GetByIdAsync(authorId);
-                var actorName = string.IsNullOrWhiteSpace(author?.FullName) ? "Someone" : author!.FullName;
 
                 // Only someone who owns the task or the project may widen access.
                 var canGrantAccess = task.UserId == authorId
@@ -266,30 +318,18 @@ namespace Miqat.Application.Services
                                 .AddAsync(new GroupMember(groupId, userId));
                         }
                     }
-
-                    await _unitOfWork.Repository<Notification>().AddAsync(new Notification(
-                        title: "You were mentioned",
-                        message: $"{actorName} mentioned you in \"{task.Title}\".",
-                        type: Domain.Enumerations.NotificationType.MentionedInTask,
-                        recipientUserId: userId,
-                        triggeredByUserId: authorId,
-                        linkedEntityId: taskId,
-                        linkedEntityType: "TaskItem",
-                        linkedCommentId: commentId));
                 }
 
-                await _unitOfWork.CompleteAsync();
+                // Saved together with the mentions and any access that was granted.
+                var staged = await _notifications.StageAsync(
+                    new NotificationContent(
+                        Domain.Enumerations.NotificationType.MentionedInTask, "You were mentioned",
+                        actor => $"{actor} mentioned you in \"{task.Title}\".",
+                        authorId, taskId, "TaskItem", commentId),
+                    mentioned);
 
-                await _realtime.NotifyUsersAsync(mentioned, "notification", new
-                {
-                    title = "You were mentioned",
-                    message = $"{actorName} mentioned you in \"{task.Title}\"",
-                    type = "MentionedInTask",
-                    linkedEntityId = taskId,
-                    linkedEntityType = "TaskItem",
-                    linkedCommentId = commentId,
-                    triggeredByUserName = actorName
-                });
+                await _unitOfWork.CompleteAsync();
+                await _notifications.DeliverAsync(staged);
             }
             catch
             {
@@ -306,7 +346,8 @@ namespace Miqat.Application.Services
             AuthorName = author?.FullName,
             AuthorProfilePictureUrl = author?.ProfilePictureUrl,
             CreatedAt = comment.CreatedAt,
-            UpdatedAt = comment.UpdatedAt
+            UpdatedAt = comment.UpdatedAt,
+            IsEdited = comment.UpdatedAt.HasValue
         };
     }
 }

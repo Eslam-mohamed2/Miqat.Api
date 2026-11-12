@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Miqat.Application.Interfaces;
 using System.Security.Claims;
@@ -46,7 +45,15 @@ namespace Miqat.API.Controllers
             return Ok(notifications);
         }
 
-        [HttpPut("{id}/read")]
+        /// <summary>Just the number, for the badge - same shape as Mentions/unread-count.</summary>
+        [HttpGet("unread-count")]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            var count = await _notificationService.GetUnreadCountAsync(GetCurrentUserId());
+            return Ok(new { unreadCount = count });
+        }
+
+        [HttpPut("{id:guid}/read")]
         public async Task<IActionResult> MarkAsRead(Guid id)
         {
             var result = await _notificationService.MarkAsReadAsync(id);
@@ -61,7 +68,7 @@ namespace Miqat.API.Controllers
             return Ok(new { message = "All notifications marked as read." });
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _notificationService.DeleteAsync(id);

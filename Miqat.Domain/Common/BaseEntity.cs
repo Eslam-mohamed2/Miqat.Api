@@ -33,5 +33,12 @@ namespace Miqat.Domain.Common
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = deletedBy;
         }
+
+        public void Restore(string? restoredBy = null)
+        {
+            IsDeleted = false;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = restoredBy;
+        }
     }
 }

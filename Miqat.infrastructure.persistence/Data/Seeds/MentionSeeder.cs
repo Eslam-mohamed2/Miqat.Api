@@ -26,7 +26,10 @@ namespace Miqat.infrastructure.persistence.Data.Seeds
 
             var dtos = LoadJson<MentionSeedDto>("mentions.json");
 
-            var entities = dtos.Select(dto =>
+            // Mention's constructor rejects self-mentions, which the seed file contains
+            var entities = dtos
+                .Where(dto => dto.MentionedByUserId != dto.MentionedUserId)
+                .Select(dto =>
             {
                 var entityType = Enum.Parse<EntityType>(dto.EntityType);
 

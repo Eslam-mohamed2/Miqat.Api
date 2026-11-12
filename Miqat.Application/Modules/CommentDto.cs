@@ -10,6 +10,9 @@ public class CommentDto
     public string? AuthorProfilePictureUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>True once the author has changed the text.</summary>
+    public bool IsEdited { get; set; }
 }
 
 public class CreateCommentDto
@@ -21,6 +24,12 @@ public class CreateCommentDto
     /// parsed out of the text: names are ambiguous and change, ids do not.
     /// </summary>
     public List<Guid> MentionedUserIds { get; set; } = new();
+}
+
+/// <summary>Body of PUT /api/Task/comments/{id}.</summary>
+public class UpdateCommentDto
+{
+    public string Content { get; set; } = string.Empty;
 }
 
 /// <summary>Someone who can be @mentioned on a task.</summary>

@@ -1,172 +1,160 @@
 using Miqat.Application.Common;
 using Miqat.Application.Interfaces;
 using Miqat.Application.Modules;
+using Miqat.Application.Specifications.Users;
 using Miqat.Domain.Entities;
 using Miqat.Domain.Enumerations;
 
 namespace Miqat.Application.Services
 {
+    /// <summary>
+    /// There is at most one friendship row per pair of users (the service checks
+    /// both directions before inserting, and the table has a unique index on
+    /// SenderId + ReceiverId). A row that was unfriended, rejected or unblocked
+    /// is therefore re-used ("reopened") by the next request instead of
+    /// inserting a second row.
+    ///
+    /// A Blocked row always has the blocker as Sender, so only the blocker can
+    /// unblock.
+    /// </summary>
     public class FriendService : IFriendService
     {
+        private const int MaxSuggestions = 20;
+
         private readonly IUnitOfWork _unitOfWork;
-        private readonly INotificationService _notificationService;
-        private readonly UserMapper _userMapper;
+        private readonly INotificationSender _notifications;
 
-        private readonly IRealtimeNotifier _realtime;
-
-        public FriendService(
-            IUnitOfWork unitOfWork,
-            INotificationService notificationService,
-            UserMapper userMapper,
-            IRealtimeNotifier realtime)
+        public FriendService(IUnitOfWork unitOfWork, INotificationSender notifications)
         {
             _unitOfWork = unitOfWork;
-            _notificationService = notificationService;
-            _userMapper = userMapper;
-            _realtime = realtime;
+            _notifications = notifications;
         }
 
         public async Task<FriendshipDto> SendFriendRequestAsync(Guid senderId, Guid receiverId)
         {
             if (senderId == receiverId)
-                throw new InvalidOperationException("A user cannot send a friend request to themselves.");
+                throw new ApiException("You cannot send a friend request to yourself.", 400);
 
-            // Check if sender and receiver exist
-            var sender = await _unitOfWork.Repository<User>().GetByIdAsync(senderId);
-            if (sender == null)
-                throw new InvalidOperationException($"Sender with ID {senderId} not found.");
+            var sender = await FindActiveUserAsync(senderId)
+                ?? throw new ApiException("User not found.", 404);
+            var receiver = await FindActiveUserAsync(receiverId)
+                ?? throw new ApiException("User not found.", 404);
 
-            var receiver = await _unitOfWork.Repository<User>().GetByIdAsync(receiverId);
-            if (receiver == null)
-                throw new InvalidOperationException($"Receiver with ID {receiverId} not found.");
+            var friendship = await FindBetweenAsync(senderId, receiverId);
 
-            // Check if friendship already exists
-            var existingFriendship = await _unitOfWork.Repository<Friendship>()
-                .FindAsync(f => (f.SenderId == senderId && f.ReceiverId == receiverId) ||
-                                (f.SenderId == receiverId && f.ReceiverId == senderId));
-
-            if (existingFriendship.Any())
-                throw new InvalidOperationException("A friendship request already exists between these users.");
-
-            var friendship = new Friendship(senderId, receiverId);
-            await _unitOfWork.Repository<Friendship>().AddAsync(friendship);
-            await _unitOfWork.CompleteAsync();
-
-            // Create notification for receiver
-            var notification = new Notification(
-                title: "New Friend Request",
-                message: $"{sender.FullName} sent you a friend request.",
-                type: NotificationType.FriendRequestSent,
-                recipientUserId: receiverId,
-                triggeredByUserId: senderId,
-                linkedEntityId: friendship.Id,
-                linkedEntityType: "Friendship"
-            );
-            await _unitOfWork.Repository<Notification>().AddAsync(notification);
-            await _unitOfWork.CompleteAsync();
-
-            await _realtime.NotifyUserAsync(receiverId, "notification", new
+            if (friendship == null)
             {
-                title = notification.Title,
-                message = notification.Message,
-                type = "FriendRequestSent",
-                linkedEntityId = friendship.Id,
-                linkedEntityType = "Friendship",
-                triggeredByUserName = sender.FullName
-            });
+                friendship = new Friendship(senderId, receiverId);
+                await _unitOfWork.Repository<Friendship>().AddAsync(friendship);
+            }
+            else if (friendship.Status == FriendshipStatus.Blocked && !friendship.IsDeleted)
+            {
+                // Same message whoever did the blocking, so a block is not revealed.
+                throw new ApiException("You cannot send a friend request to this user.", 400);
+            }
+            else if (!friendship.IsDeleted && friendship.Status == FriendshipStatus.Accepted)
+            {
+                throw new ApiException("You are already friends with this user.", 400);
+            }
+            else if (!friendship.IsDeleted && friendship.Status == FriendshipStatus.Pending)
+            {
+                throw new ApiException(
+                    friendship.SenderId == senderId
+                        ? "You have already sent a friend request to this user."
+                        : "This user has already sent you a friend request.", 400);
+            }
+            else
+            {
+                // Unfriended, rejected or unblocked earlier: start over on the same row.
+                friendship.Reopen(senderId, receiverId);
+            }
 
-            return MapToDto(friendship, sender, receiver);
+            var staged = await _notifications.StageAsync(
+                new NotificationContent(
+                    NotificationType.FriendRequestSent, "New Friend Request",
+                    actor => $"{actor} sent you a friend request.",
+                    senderId, friendship.Id, "Friendship"),
+                new[] { receiverId });
+
+            // Saved together with the request itself.
+            await _unitOfWork.CompleteAsync();
+            await _notifications.DeliverAsync(staged);
+
+            return MapToDto(friendship, sender, receiver, senderId);
         }
 
         public async Task<bool> AcceptFriendRequestAsync(Guid friendshipId, Guid receiverId)
         {
-            var friendship = await _unitOfWork.Repository<Friendship>().GetByIdAsync(friendshipId);
+            var friendship = await FindForParticipantAsync(friendshipId, receiverId);
             if (friendship == null)
                 return false;
 
             if (friendship.ReceiverId != receiverId)
-                throw new InvalidOperationException("Only the receiver can accept this friend request.");
+                throw new ApiException("Only the receiver can accept this friend request.", 403);
+
+            if (friendship.Status != FriendshipStatus.Pending)
+                throw new ApiException("This friend request is no longer pending.", 400);
 
             friendship.Accept();
-            _unitOfWork.Repository<Friendship>().Update(friendship);
+
+            var staged = await _notifications.StageAsync(
+                new NotificationContent(
+                    NotificationType.FriendRequestAccepted, "Friend Request Accepted",
+                    actor => $"{actor} accepted your friend request.",
+                    receiverId, friendship.Id, "Friendship"),
+                new[] { friendship.SenderId });
+
             await _unitOfWork.CompleteAsync();
-
-            // Create notification for sender
-            var sender = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.SenderId);
-            var receiver = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.ReceiverId);
-
-            var notification = new Notification(
-                title: "Friend Request Accepted",
-                message: $"{receiver?.FullName} accepted your friend request.",
-                type: NotificationType.FriendRequestAccepted,
-                recipientUserId: friendship.SenderId,
-                triggeredByUserId: receiverId,
-                linkedEntityId: friendship.Id,
-                linkedEntityType: "Friendship"
-            );
-            await _unitOfWork.Repository<Notification>().AddAsync(notification);
-            await _unitOfWork.CompleteAsync();
-
-            await _realtime.NotifyUserAsync(friendship.SenderId, "notification", new
-            {
-                title = notification.Title,
-                message = notification.Message,
-                type = "FriendRequestAccepted",
-                linkedEntityId = friendship.Id,
-                linkedEntityType = "Friendship",
-                triggeredByUserName = receiver?.FullName
-            });
+            await _notifications.DeliverAsync(staged);
 
             return true;
         }
 
         public async Task<bool> RejectFriendRequestAsync(Guid friendshipId, Guid receiverId)
         {
-            var friendship = await _unitOfWork.Repository<Friendship>().GetByIdAsync(friendshipId);
+            var friendship = await FindForParticipantAsync(friendshipId, receiverId);
             if (friendship == null)
                 return false;
 
             if (friendship.ReceiverId != receiverId)
-                throw new InvalidOperationException("Only the receiver can reject this friend request.");
+                throw new ApiException("Only the receiver can reject this friend request.", 403);
+
+            if (friendship.Status != FriendshipStatus.Pending)
+                throw new ApiException("This friend request is no longer pending.", 400);
 
             friendship.Reject();
-            _unitOfWork.Repository<Friendship>().Update(friendship);
             await _unitOfWork.CompleteAsync();
-
             return true;
         }
 
         public async Task<bool> BlockUserAsync(Guid userId, Guid userToBlockId)
         {
             if (userId == userToBlockId)
-                throw new InvalidOperationException("A user cannot block themselves.");
-
-            // Check if users exist
-            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
-            if (user == null)
-                throw new InvalidOperationException($"User with ID {userId} not found.");
+                throw new ApiException("You cannot block yourself.", 400);
 
             var userToBlock = await _unitOfWork.Repository<User>().GetByIdAsync(userToBlockId);
-            if (userToBlock == null)
-                throw new InvalidOperationException($"User with ID {userToBlockId} not found.");
+            if (userToBlock == null || userToBlock.IsDeleted)
+                throw new ApiException("User not found.", 404);
 
-            // Check if a friendship exists
-            var existingFriendship = await _unitOfWork.Repository<Friendship>()
-                .FindAsync(f => (f.SenderId == userId && f.ReceiverId == userToBlockId) ||
-                                (f.SenderId == userToBlockId && f.ReceiverId == userId));
+            var friendship = await FindBetweenAsync(userId, userToBlockId);
 
-            if (existingFriendship.Any())
+            if (friendship == null)
             {
-                var friendship = existingFriendship.First();
+                friendship = new Friendship(userId, userToBlockId);
                 friendship.Block();
-                _unitOfWork.Repository<Friendship>().Update(friendship);
+                await _unitOfWork.Repository<Friendship>().AddAsync(friendship);
+            }
+            else if (friendship.Status == FriendshipStatus.Blocked && !friendship.IsDeleted)
+            {
+                if (friendship.SenderId == userId)
+                    return true; // already blocked by this user
+
+                // The other user blocked first; do not let this call take the block over.
+                throw new ApiException("You cannot block this user.", 400);
             }
             else
             {
-                // Create new blocked friendship
-                var friendship = new Friendship(userId, userToBlockId);
-                friendship.Block();
-                await _unitOfWork.Repository<Friendship>().AddAsync(friendship);
+                friendship.BlockBy(userId, userToBlockId);
             }
 
             await _unitOfWork.CompleteAsync();
@@ -175,19 +163,36 @@ namespace Miqat.Application.Services
 
         public async Task<bool> UnblockUserAsync(Guid userId, Guid blockedUserId)
         {
-            var friendship = await _unitOfWork.Repository<Friendship>()
-                .FindAsync(f => (f.SenderId == userId && f.ReceiverId == blockedUserId && f.Status == FriendshipStatus.Blocked) ||
-                                (f.SenderId == blockedUserId && f.ReceiverId == userId && f.Status == FriendshipStatus.Blocked));
+            // Only the blocker (stored as Sender) may unblock.
+            var matches = await _unitOfWork.Repository<Friendship>()
+                .FindAsync(f => f.SenderId == userId &&
+                                f.ReceiverId == blockedUserId &&
+                                f.Status == FriendshipStatus.Blocked &&
+                                !f.IsDeleted);
 
-            if (!friendship.Any())
+            var friendship = matches.FirstOrDefault();
+            if (friendship == null)
                 return false;
 
-            var friendshipToUnblock = friendship.First();
-            friendshipToUnblock.SoftDelete();
-            _unitOfWork.Repository<Friendship>().Update(friendshipToUnblock);
+            friendship.SoftDelete(userId.ToString());
             await _unitOfWork.CompleteAsync();
-
             return true;
+        }
+
+        public async Task<IEnumerable<UserDto>> GetBlockedUsersAsync(Guid userId)
+        {
+            var blocks = await _unitOfWork.Repository<Friendship>()
+                .FindAsync(f => f.SenderId == userId &&
+                                f.Status == FriendshipStatus.Blocked &&
+                                !f.IsDeleted);
+
+            var blockedIds = blocks.Select(f => f.ReceiverId).Distinct().ToList();
+            if (blockedIds.Count == 0) return new List<UserDto>();
+
+            var users = await _unitOfWork.Repository<User>()
+                .FindAsync(u => blockedIds.Contains(u.Id) && !u.IsDeleted);
+
+            return users.OrderBy(u => u.FullName).Select(ToCard).ToList();
         }
 
         public async Task<IEnumerable<FriendshipDto>> GetFriendsAsync(Guid userId)
@@ -195,20 +200,9 @@ namespace Miqat.Application.Services
             var friendships = await _unitOfWork.Repository<Friendship>()
                 .FindAsync(f => f.Status == FriendshipStatus.Accepted &&
                                 (f.SenderId == userId || f.ReceiverId == userId) &&
-                                !f.IsDeleted);
+                                !f.IsDeleted && !f.Sender.IsDeleted && !f.Receiver.IsDeleted);
 
-            var dtos = new List<FriendshipDto>();
-            foreach (var friendship in friendships)
-            {
-                var otherUserId = friendship.SenderId == userId ? friendship.ReceiverId : friendship.SenderId;
-                var otherUser = await _unitOfWork.Repository<User>().GetByIdAsync(otherUserId);
-                var sender = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.SenderId);
-                var receiver = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.ReceiverId);
-
-                dtos.Add(MapToDto(friendship, sender, receiver));
-            }
-
-            return dtos;
+            return await MapToDtosAsync(friendships, userId);
         }
 
         public async Task<IEnumerable<FriendshipDto>> GetPendingRequestsAsync(Guid userId)
@@ -216,17 +210,9 @@ namespace Miqat.Application.Services
             var friendships = await _unitOfWork.Repository<Friendship>()
                 .FindAsync(f => f.Status == FriendshipStatus.Pending &&
                                 f.ReceiverId == userId &&
-                                !f.IsDeleted);
+                                !f.IsDeleted && !f.Sender.IsDeleted);
 
-            var dtos = new List<FriendshipDto>();
-            foreach (var friendship in friendships)
-            {
-                var sender = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.SenderId);
-                var receiver = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.ReceiverId);
-                dtos.Add(MapToDto(friendship, sender, receiver));
-            }
-
-            return dtos;
+            return await MapToDtosAsync(friendships, userId);
         }
 
         public async Task<IEnumerable<FriendshipDto>> GetSentRequestsAsync(Guid userId)
@@ -234,134 +220,205 @@ namespace Miqat.Application.Services
             var friendships = await _unitOfWork.Repository<Friendship>()
                 .FindAsync(f => f.Status == FriendshipStatus.Pending &&
                                 f.SenderId == userId &&
-                                !f.IsDeleted);
+                                !f.IsDeleted && !f.Receiver.IsDeleted);
 
-            var dtos = new List<FriendshipDto>();
-            foreach (var friendship in friendships)
-            {
-                var sender = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.SenderId);
-                var receiver = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.ReceiverId);
-                dtos.Add(MapToDto(friendship, sender, receiver));
-            }
-
-            return dtos;
+            return await MapToDtosAsync(friendships, userId);
         }
 
-        public async Task<FriendshipDto?> GetFriendshipAsync(Guid friendshipId)
+        public async Task<FriendshipDto?> GetFriendshipAsync(Guid friendshipId, Guid currentUserId)
         {
-            var friendship = await _unitOfWork.Repository<Friendship>().GetByIdAsync(friendshipId);
-            if (friendship == null || friendship.IsDeleted)
+            var friendship = await FindForParticipantAsync(friendshipId, currentUserId);
+            if (friendship == null)
                 return null;
 
-            var sender = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.SenderId);
-            var receiver = await _unitOfWork.Repository<User>().GetByIdAsync(friendship.ReceiverId);
+            // The blocked side must not be able to see the block.
+            if (friendship.Status == FriendshipStatus.Blocked && friendship.SenderId != currentUserId)
+                return null;
 
-            return MapToDto(friendship, sender, receiver);
+            return (await MapToDtosAsync(new[] { friendship }, currentUserId)).First();
         }
 
         public async Task DeleteAsync(Guid friendshipId, Guid currentUserId)
         {
-            var friendship = await _unitOfWork.Repository<Friendship>().GetByIdAsync(friendshipId);
-            if (friendship == null)
-                throw new InvalidOperationException($"Friendship with ID {friendshipId} not found.");
+            var friendship = await FindForParticipantAsync(friendshipId, currentUserId)
+                ?? throw new ApiException("Friendship not found.", 404);
 
-            if (friendship.SenderId != currentUserId && friendship.ReceiverId != currentUserId)
-                throw new InvalidOperationException("Only participants of this friendship can delete it.");
+            // Removing a block goes through unblock, and only for the blocker.
+            if (friendship.Status == FriendshipStatus.Blocked)
+            {
+                if (friendship.SenderId != currentUserId)
+                    throw new ApiException("Friendship not found.", 404);
 
-            friendship.SoftDelete();
-            _unitOfWork.Repository<Friendship>().Update(friendship);
+                throw new ApiException("Use unblock to remove a block.", 400);
+            }
+
+            friendship.SoftDelete(currentUserId.ToString());
             await _unitOfWork.CompleteAsync();
         }
 
-        public async Task<string> GetStatusAsync(Guid currentUserId, Guid targetUserId)
+        public async Task<FriendshipStatusDto> GetStatusAsync(Guid currentUserId, Guid targetUserId)
         {
-            var friendship = await _unitOfWork.Repository<Friendship>()
-                .FindAsync(f => (f.SenderId == currentUserId && f.ReceiverId == targetUserId) ||
-                                (f.SenderId == targetUserId && f.ReceiverId == currentUserId));
+            var friendship = await FindBetweenAsync(currentUserId, targetUserId);
 
-            if (!friendship.Any())
-                return "None";
+            if (friendship == null || friendship.IsDeleted)
+                return new FriendshipStatusDto();
 
-            var fs = friendship.First();
-
-            return fs.Status switch
+            var status = friendship.Status switch
             {
                 FriendshipStatus.Accepted => "Friends",
-                FriendshipStatus.Pending when fs.SenderId == currentUserId => "Sent",
-                FriendshipStatus.Pending when fs.SenderId != currentUserId => "Pending",
-                FriendshipStatus.Blocked => "Blocked",
+                FriendshipStatus.Pending when friendship.SenderId == currentUserId => "Sent",
+                FriendshipStatus.Pending => "Pending",
+                // Only the blocker is told about the block.
+                FriendshipStatus.Blocked when friendship.SenderId == currentUserId => "Blocked",
                 _ => "None"
+            };
+
+            return new FriendshipStatusDto
+            {
+                Status = status,
+                Id = status == "None" ? null : friendship.Id
             };
         }
 
         public async Task<IEnumerable<UserDto>> GetSuggestionsAsync(Guid currentUserId)
         {
-            // Step 1: Get all GroupIds where currentUserId is a member
-            var userGroupMembers = await _unitOfWork.Repository<GroupMember>()
-                .FindAsync(gm => gm.UserId == currentUserId);
-            var groupIds = userGroupMembers.Select(gm => gm.GroupId).ToList();
+            // Everyone the user already has a live relationship with (friend, pending, blocked).
+            var existing = await _unitOfWork.Repository<Friendship>()
+                .FindAsync(f => (f.SenderId == currentUserId || f.ReceiverId == currentUserId) &&
+                                !f.IsDeleted &&
+                                f.Status != FriendshipStatus.Rejected);
 
-            // Step 2: Get all UserIds from GroupMembers where GroupId is in step 1 result, excluding currentUserId
-            var potentialFriendsFromGroups = await _unitOfWork.Repository<GroupMember>()
-                .FindAsync(gm => groupIds.Contains(gm.GroupId) && gm.UserId != currentUserId);
-            var userIdsFromGroups = potentialFriendsFromGroups.Select(gm => gm.UserId).Distinct().ToList();
+            var excludedIds = existing
+                .Select(f => f.SenderId == currentUserId ? f.ReceiverId : f.SenderId)
+                .Append(currentUserId)
+                .Distinct()
+                .ToList();
 
-            // Step 3: Get all UserIds that already have any friendship with currentUserId (both directions)
-            var existingFriendships = await _unitOfWork.Repository<Friendship>()
-                .FindAsync(f => (f.SenderId == currentUserId || f.ReceiverId == currentUserId) && !f.IsDeleted);
-            var existingFriendUserIds = new HashSet<Guid>();
-            foreach (var fs in existingFriendships)
+            // First choice: people who share a project with the user.
+            var myMemberships = await _unitOfWork.Repository<GroupMember>()
+                .FindAsync(gm => gm.UserId == currentUserId && !gm.Group.IsDeleted);
+            var myOwnedGroups = await _unitOfWork.Repository<Group>()
+                .FindAsync(g => g.OwnerId == currentUserId && !g.IsDeleted);
+
+            var groupIds = myMemberships.Select(gm => gm.GroupId)
+                .Concat(myOwnedGroups.Select(g => g.Id))
+                .Distinct()
+                .ToList();
+
+            var suggested = new List<User>();
+
+            if (groupIds.Count > 0)
             {
-                if (fs.SenderId == currentUserId)
-                    existingFriendUserIds.Add(fs.ReceiverId);
-                else
-                    existingFriendUserIds.Add(fs.SenderId);
+                var coMembers = await _unitOfWork.Repository<GroupMember>()
+                    .FindAsync(gm => groupIds.Contains(gm.GroupId) &&
+                                     !excludedIds.Contains(gm.UserId));
+                var coMemberIds = coMembers.Select(gm => gm.UserId).Distinct().ToList();
+
+                if (coMemberIds.Count > 0)
+                {
+                    var users = await _unitOfWork.Repository<User>()
+                        .FindAsync(u => coMemberIds.Contains(u.Id) &&
+                                        !u.IsDeleted && u.IsActive && u.IsVerified);
+                    suggested.AddRange(users.OrderBy(u => u.FullName).Take(MaxSuggestions));
+                }
             }
 
-            // Step 4: From step 2 results, exclude UserIds from step 3
-            var suggestedUserIds = userIdsFromGroups.Where(uid => !existingFriendUserIds.Contains(uid)).ToList();
-
-            // Step 5: If result is empty, fallback → get any 20 users excluding currentUserId and step 3 UserIds
-            if (suggestedUserIds.Count == 0)
+            // Fallback: any other active users.
+            if (suggested.Count == 0)
             {
-                var allUsers = await _unitOfWork.Repository<User>().GetAllAsync();
-                var excludeIds = new HashSet<Guid> { currentUserId };
-                foreach (var fid in existingFriendUserIds)
-                    excludeIds.Add(fid);
-
-                suggestedUserIds = allUsers
-                    .Where(u => !excludeIds.Contains(u.Id))
-                    .Take(20)
-                    .Select(u => u.Id)
-                    .ToList();
+                var spec = new SuggestedUsersSpec(excludedIds, MaxSuggestions);
+                suggested.AddRange(await _unitOfWork.Repository<User>().ListAsync(spec));
             }
 
-            // Step 6: Query Users table for final UserIds
-            var suggestedUsers = new List<User>();
-            foreach (var userId in suggestedUserIds.Take(20))
-            {
-                var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
-                if (user != null && !user.IsDeleted)
-                    suggestedUsers.Add(user);
-            }
-
-            // Step 7: Map to UserDto
-            var dtos = suggestedUsers.Select(u => new UserDto
-            {
-                Id = u.Id,
-                FullName = u.FullName,
-                Email = u.Email,
-                Country = u.Country,
-                ProfilePictureUrl = u.ProfilePictureUrl
-            }).ToList();
-
-            return dtos;
+            return suggested.Select(ToCard).ToList();
         }
 
-        private FriendshipDto MapToDto(Friendship friendship, User? sender, User? receiver)
+        // ── helpers ───────────────────────────────────────────────────────────
+
+        private async Task<User?> FindActiveUserAsync(Guid id)
         {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(id);
+            return user == null || user.IsDeleted || !user.IsActive ? null : user;
+        }
+
+        /// <summary>The single row for this pair, in either direction, deleted or not.</summary>
+        private async Task<Friendship?> FindBetweenAsync(Guid a, Guid b)
+        {
+            var rows = await _unitOfWork.Repository<Friendship>()
+                .FindAsync(f => (f.SenderId == a && f.ReceiverId == b) ||
+                                (f.SenderId == b && f.ReceiverId == a));
+
+            // Old data may hold one row per direction; prefer the live one, then
+            // the one already stored as a -> b.
+            return rows
+                .OrderBy(f => f.IsDeleted)
+                .ThenBy(f => f.SenderId == a ? 0 : 1)
+                .ThenByDescending(f => f.CreatedAt)
+                .FirstOrDefault();
+        }
+
+        /// <summary>A live friendship the user takes part in, otherwise null.</summary>
+        private async Task<Friendship?> FindForParticipantAsync(Guid friendshipId, Guid userId)
+        {
+            var friendship = await _unitOfWork.Repository<Friendship>().GetByIdAsync(friendshipId);
+            if (friendship == null || friendship.IsDeleted)
+                return null;
+            if (friendship.SenderId != userId && friendship.ReceiverId != userId)
+                return null;
+            return friendship;
+        }
+
+        /// <param name="viewerId">Whose list this is; decides which side is "the friend".</param>
+        private async Task<List<FriendshipDto>> MapToDtosAsync(IEnumerable<Friendship> friendships, Guid viewerId)
+        {
+            var list = friendships.OrderByDescending(f => f.UpdatedAt ?? f.CreatedAt).ToList();
+            if (list.Count == 0) return new List<FriendshipDto>();
+
+            var userIds = list.SelectMany(f => new[] { f.SenderId, f.ReceiverId }).Distinct().ToList();
+            var users = (await _unitOfWork.Repository<User>().FindAsync(u => userIds.Contains(u.Id)))
+                .ToDictionary(u => u.Id);
+
+            return list.Select(f => MapToDto(
+                f,
+                users.GetValueOrDefault(f.SenderId),
+                users.GetValueOrDefault(f.ReceiverId),
+                viewerId)).ToList();
+        }
+
+        /// <summary>The public "card" of a user: no phone number, birthday or account flags.</summary>
+        private static UserDto ToCard(User user) => new()
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            Country = user.Country,
+            ProfilePictureUrl = user.ProfilePictureUrl
+        };
+
+        private static UserCardDto? ToCardDto(User? user) => user == null ? null : new UserCardDto
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            ProfilePictureUrl = user.ProfilePictureUrl,
+            Country = user.Country
+        };
+
+        private static FriendshipDto MapToDto(Friendship friendship, User? sender, User? receiver, Guid viewerId)
+        {
+            var sentByMe = friendship.SenderId == viewerId;
+            var friend = sentByMe ? receiver : sender;
+
             return new FriendshipDto
             {
+                FriendId = sentByMe ? friendship.ReceiverId : friendship.SenderId,
+                FriendName = friend?.FullName,
+                FriendEmail = friend?.Email,
+                FriendProfilePictureUrl = friend?.ProfilePictureUrl,
+                SentByMe = sentByMe,
+                Sender = ToCardDto(sender),
+                Receiver = ToCardDto(receiver),
+                FriendUser = ToCardDto(friend),
                 Id = friendship.Id,
                 SenderId = friendship.SenderId,
                 SenderName = sender?.FullName,

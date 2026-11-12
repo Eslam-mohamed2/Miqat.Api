@@ -38,9 +38,20 @@ public sealed class FakeRepository<T> : IGenericRepository<T> where T : class
             .GroupBy(keySelector.Compile())
             .ToDictionary(g => g.Key, g => g.Count()));
 
+    public Task<bool> AnyAsync(Expression<Func<T, bool>> predicate) =>
+        Task.FromResult(_items.Any(predicate.Compile()));
+
+    public Task<int> CountAsync(Expression<Func<T, bool>> predicate) =>
+        Task.FromResult(_items.Count(predicate.Compile()));
+
+    public Task<List<TResult>> SelectAsync<TResult>(
+        Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> selector) =>
+        Task.FromResult(_items.Where(predicate.Compile()).Select(selector.Compile()).ToList());
+
     public Task AddAsync(T entity) { _items.Add(entity); return Task.CompletedTask; }
     public void Update(T entity) { }
     public void Delete(T entity) { _items.Remove(entity); }
+    public void DeleteRange(IEnumerable<T> entities) { foreach (var entity in entities.ToList()) _items.Remove(entity); }
 
     public Task<T?> GetEntityWithSpec(ISpecification<T> spec) =>
         Task.FromResult(_items.FirstOrDefault());

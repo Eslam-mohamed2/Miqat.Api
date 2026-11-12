@@ -11,6 +11,9 @@ namespace Miqat.Domain.Enumerations
         None,
         Daily,
         Weekly,
-        Monthly
+        Monthly,
+
+        // Stored as text, so adding a member needs no migration.
+        Yearly
     }
 }

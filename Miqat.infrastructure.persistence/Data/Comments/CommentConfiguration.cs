@@ -16,7 +16,7 @@ namespace Miqat.infrastructure.persistence.Data.Comments
 
             // Deleting a task takes its discussion with it.
             builder.HasOne(c => c.Task)
-                .WithMany()
+                .WithMany(t => t.Comments)
                 .HasForeignKey(c => c.TaskId)
                 .OnDelete(DeleteBehavior.Cascade);
 

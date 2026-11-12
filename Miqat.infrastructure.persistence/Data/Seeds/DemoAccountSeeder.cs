@@ -111,10 +111,8 @@ namespace Miqat.infrastructure.persistence.Data.Seeds
             {
                 var task = new TaskItem(title, desc, owner.Id, priority,
                     now.AddDays(dueInDays), assignee?.Id, group.Id,
-                    "launch,demo", RecurrencePattern.None, null)
-                {
-                    Status = status
-                };
+                    "launch,demo", RecurrencePattern.None, null);
+                task.ChangeStatus(status);
                 return task;
             }
 

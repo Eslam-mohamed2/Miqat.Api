@@ -12,6 +12,9 @@ namespace Miqat.Application.Interfaces
 
         Task<CommentDto> AddAsync(Guid taskId, string content, IEnumerable<Guid>? mentionedUserIds = null);
 
+        /// <summary>Author-only. Returns null when the comment does not exist.</summary>
+        Task<CommentDto?> UpdateAsync(Guid commentId, string content);
+
         /// <summary>
         /// People who can be @mentioned on this task: everyone already involved,
         /// plus the caller's friends (who can be pulled in for help).

@@ -21,4 +21,7 @@ public class UpdateProfileDto
     public string? TimeZone { get; set; }
     public string? Gender { get; set; }
     public DateTime? DateOfBirth { get; set; }
+
+    /// <summary>Short "about me" text (up to 500 characters). Blank clears it.</summary>
+    public string? Bio { get; set; }
 }

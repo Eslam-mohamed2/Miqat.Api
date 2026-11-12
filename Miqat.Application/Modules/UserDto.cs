@@ -11,6 +11,9 @@ public class UserDto
     public string? Gender { get; set; }
     public string? Country { get; set; }
     public string? TimeZone { get; set; }
+
+    /// <summary>Short "about me" text.</summary>
+    public string? Bio { get; set; }
     public string Role { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public bool IsVerified { get; set; }

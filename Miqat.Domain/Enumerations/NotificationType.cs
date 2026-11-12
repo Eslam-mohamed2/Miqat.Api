@@ -15,6 +15,15 @@ namespace Miqat.Domain.Enumerations
         MentionedInTask,
         FriendRequestSent,
         FriendRequestAccepted,
-        UserBlocked
+        UserBlocked,
+
+        // Calendar. Stored as text, so adding members needs no migration.
+        EventInvitation,
+        EventResponse,
+        EventChanged,
+        EventCancelled,
+
+        /// <summary>A reminder the user set on a task or an event.</summary>
+        Reminder
     }
 }

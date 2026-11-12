@@ -41,8 +41,23 @@ namespace Miqat.infrastructure.persistence.Data.Tasks
             builder.Property(t => t.DueDate)
                 .IsRequired(false);
 
+            builder.Property(t => t.StartDate)
+                .IsRequired(false);
+
+            builder.Property(t => t.CompletedAt)
+                .IsRequired(false);
+
             builder.Property(t => t.RecurrenceEndDate)
                 .IsRequired(false);
+
+            builder.Property(t => t.DueSoonRemindedFor)
+                .IsRequired(false);
+
+            builder.Ignore(t => t.IsOpen);
+
+            // The reminder job and the calendar both ask for "tasks due between
+            // two moments"; without this they read the whole table.
+            builder.HasIndex(t => t.DueDate);
 
             builder.Property(t => t.Tags)
                 .HasMaxLength(500)

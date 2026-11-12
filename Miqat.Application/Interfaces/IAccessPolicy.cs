@@ -1,3 +1,4 @@
+using Miqat.Domain.Enumerations;
 using System;
 using System.Threading.Tasks;
 
@@ -32,6 +33,23 @@ namespace Miqat.Application.Interfaces
         Task<bool> CanEditTaskAsync(Guid taskId);
 
         Task<bool> CanDeleteTaskAsync(Guid taskId);
+
+        /// <summary>
+        /// An event is visible to its owner, to everyone invited to it, and to
+        /// the members of the project it belongs to.
+        /// </summary>
+        Task<bool> CanViewEventAsync(Guid eventId);
+
+        /// <summary>Owner only (or an Admin). Invited people answer; they do not edit.</summary>
+        Task<bool> CanManageEventAsync(Guid eventId);
+
+        /// <summary>
+        /// For the things that hang off a task or an event (reminders,
+        /// attachments, checklist lines): answers 404 when the item does not
+        /// exist and 403 when the caller may not see it - or, with
+        /// <paramref name="toChange"/>, may not change it.
+        /// </summary>
+        Task RequireItemAsync(CalendarItemKind kind, Guid itemId, bool toChange = false);
 
         /// <summary>Throws a 403 when the check fails, so callers can stay terse.</summary>
         Task RequireAsync(Task<bool> check, string message);

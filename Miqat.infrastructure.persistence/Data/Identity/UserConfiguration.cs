@@ -65,6 +65,24 @@ namespace Miqat.infrastructure.persistence.Data.Identity
 
             builder.Property(u => u.IsVerified)
                 .HasDefaultValue(false);
+
+            builder.Property(u => u.Bio)
+                .IsRequired(false)
+                .HasMaxLength(500);
+
+            // Defaults matter for the rows that exist before these columns do.
+            builder.Property(u => u.PushNotificationsEnabled)
+                .HasDefaultValue(true);
+
+            builder.Property(u => u.EmailNotificationsEnabled)
+                .HasDefaultValue(true);
+
+            builder.Property(u => u.WeeklySummaryEnabled)
+                .HasDefaultValue(false);
+
+            builder.Property(u => u.PendingEmail)
+                .IsRequired(false)
+                .HasMaxLength(255);
         }
     }
 }

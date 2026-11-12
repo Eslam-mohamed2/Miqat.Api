@@ -1,19 +1,14 @@
 ﻿using Miqat.Domain.Entities;
 using Miqat.Domain.Specifications;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Miqat.Application.Specifications.Users
 {
+    /// <summary>Case-insensitive lookup of a non-deleted user by email (pass it trimmed and lower-cased).</summary>
     public class UserByEmailSpec : BaseSpecification<User>
     {
-        public UserByEmailSpec(string email)
-            : base(u => u.Email == email && !u.IsDeleted)
+        public UserByEmailSpec(string normalizedEmail)
+            : base(u => u.Email.ToLower() == normalizedEmail && !u.IsDeleted)
         {
-            AddInclude(u => u.Tasks);
         }
     }
 }

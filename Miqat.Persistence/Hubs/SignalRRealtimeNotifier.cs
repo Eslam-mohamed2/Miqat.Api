@@ -33,10 +33,20 @@ namespace Miqat.API.Hubs
             }
         }
 
+        /// <summary>One send for the whole audience, however many people are in it.</summary>
         public async Task NotifyUsersAsync(IEnumerable<Guid> userIds, string eventName, object payload)
         {
-            foreach (var userId in userIds.Distinct())
-                await NotifyUserAsync(userId, eventName, payload);
+            var groups = userIds.Distinct().Select(id => MiqatHub.UserGroup(id.ToString())).ToList();
+            if (groups.Count == 0) return;
+
+            try
+            {
+                await _hub.Clients.Groups(groups).SendAsync(eventName, payload);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Realtime push '{Event}' to {Count} people failed", eventName, groups.Count);
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Miqat.Application.Specifications.Tasks
             // your own task list — it was only visible inside the project view.
             : base(t => (t.UserId == userId || t.AssignedToUserId == userId) && !t.IsDeleted)
         {
+            AddInclude(t => t.User);
             AddInclude(t => t.AssignedToUser!);
             AddInclude(t => t.Group!);
             AddOrderByDescending(t => t.CreatedAt);

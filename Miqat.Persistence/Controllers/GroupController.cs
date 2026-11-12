@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Miqat.Application.Interfaces;
 using Miqat.Application.Modules;
@@ -7,6 +6,8 @@ using System.Security.Claims;
 
 namespace Miqat.API.Controllers
 {
+    // Who may do what is decided in GroupService / AccessPolicy; a refusal is
+    // thrown as ApiException and rendered by GlobalExceptionMiddleware.
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
@@ -30,7 +31,7 @@ namespace Miqat.API.Controllers
             return Ok(groups);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var group = await _groupService.GetGroupById(id);
@@ -41,13 +42,12 @@ namespace Miqat.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] GroupDto dto)
         {
-            dto.OwnerId = GetCurrentUserId();
             var created = await _groupService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById),
                 new { id = created.Id }, created);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] GroupDto dto)
         {
             var result = await _groupService.UpdateAsync(id, dto);
@@ -55,7 +55,7 @@ namespace Miqat.API.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _groupService.DeleteAsync(id);
@@ -63,7 +63,7 @@ namespace Miqat.API.Controllers
             return NoContent();
         }
 
-        [HttpPost("{groupId}/members/{userId}")]
+        [HttpPost("{groupId:guid}/members/{userId:guid}")]
         public async Task<IActionResult> AddMember(Guid groupId, Guid userId)
         {
             // The actor is passed through so the new member's notification can say
@@ -73,14 +73,16 @@ namespace Miqat.API.Controllers
             return Ok(new { message = "Member added successfully." });
         }
 
-        [HttpDelete("{groupId}/members/{userId}")]
+        /// <summary>The owner removes a member, or a member removes themselves (leaves).</summary>
+        [HttpDelete("{groupId:guid}/members/{userId:guid}")]
         public async Task<IActionResult> RemoveMember(Guid groupId, Guid userId)
         {
             var result = await _groupService.RemoveMemberAsync(groupId, userId);
             if (!result) return NotFound(new { message = "Member not found." });
             return Ok(new { message = "Member removed successfully." });
         }
-        [HttpGet("{groupId}/members")]
+
+        [HttpGet("{groupId:guid}/members")]
         public async Task<IActionResult> GetMembers(Guid groupId, int pageIndex = 0, int pageSize = 20)
         {
             var response = await _groupService.GetGroupMembersPaged(groupId, pageIndex, pageSize);

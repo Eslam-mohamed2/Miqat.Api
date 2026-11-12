@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Miqat.Application.Common;
 using Miqat.Application.Interfaces;
 using Miqat.Application.Modules;
@@ -19,6 +20,9 @@ namespace Miqat.Application.Services
     /// </summary>
     public class BoardService : IBoardService
     {
+        private const int MaxNameLength = 120;          // Boards.Name column size
+        private const int MaxContentLength = 2_000_000; // ~2 MB of JSON text
+
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUser;
 
@@ -32,6 +36,31 @@ namespace Miqat.Application.Services
             string.Equals(kind, "NodeFlow", StringComparison.OrdinalIgnoreCase)
                 ? BoardKind.NodeFlow
                 : BoardKind.Whiteboard;
+
+        /// <summary>
+        /// The content column is jsonb, so text that is not JSON is rejected by
+        /// PostgreSQL itself — which used to surface as a 500. Checked here so the
+        /// caller gets a 400 that says what is wrong.
+        /// </summary>
+        private static void Validate(SaveBoardDto dto)
+        {
+            if (dto.Name != null && dto.Name.Trim().Length > MaxNameLength)
+                throw new ApiException($"Board name cannot exceed {MaxNameLength} characters.", 400);
+
+            if (string.IsNullOrWhiteSpace(dto.Content)) return;
+
+            if (dto.Content.Length > MaxContentLength)
+                throw new ApiException("This board is too large to save.", 413);
+
+            try
+            {
+                using var _ = JsonDocument.Parse(dto.Content);
+            }
+            catch (JsonException)
+            {
+                throw new ApiException("Board content must be valid JSON.", 400);
+            }
+        }
 
         public async Task<IEnumerable<BoardDto>> GetMineAsync(string? kind)
         {
@@ -68,6 +97,8 @@ namespace Miqat.Application.Services
         public async Task<BoardDto> CreateAsync(SaveBoardDto dto)
         {
             var userId = _currentUser.RequireUserId();
+            Validate(dto);
+
             var board = new Board(ParseKind(dto.Kind), dto.Name ?? string.Empty, dto.Content, userId);
 
             await _unitOfWork.Repository<Board>().AddAsync(board);
@@ -81,8 +112,9 @@ namespace Miqat.Application.Services
             var board = await _unitOfWork.Repository<Board>().GetByIdAsync(id);
             if (board == null || board.IsDeleted || board.OwnerId != userId) return null;
 
+            Validate(dto);
+
             board.Update(dto.Name, dto.Content);
-            _unitOfWork.Repository<Board>().Update(board);
             await _unitOfWork.CompleteAsync();
             return MapToDto(board);
         }

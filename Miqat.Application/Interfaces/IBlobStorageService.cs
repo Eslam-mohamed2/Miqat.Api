@@ -19,5 +19,18 @@ namespace Miqat.Application.Interfaces
         /// <exception cref="ArgumentException">Thrown if file is invalid (unsupported format or size).</exception>
         /// <exception cref="InvalidOperationException">Thrown if upload fails.</exception>
         Task<string> UploadImageAsync(IFormFile file);
+
+        // ── Private files (attachments) ──────────────────────────────────────
+        // Kept apart from the public images above: nothing here has a public
+        // address, a file can only be read back through OpenFileAsync.
+
+        /// <summary>Stores a file under a name chosen by the caller.</summary>
+        Task SaveFileAsync(string name, Stream content, string contentType);
+
+        /// <summary>The stored file, or null when there is none under that name.</summary>
+        Task<Stream?> OpenFileAsync(string name);
+
+        /// <summary>Removes a stored file. Does nothing when it is already gone; never throws.</summary>
+        Task DeleteFileAsync(string name);
     }
 }

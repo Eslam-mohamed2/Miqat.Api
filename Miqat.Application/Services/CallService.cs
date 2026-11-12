@@ -22,6 +22,30 @@ namespace Miqat.Application.Services
 
         /// <summary>A relay (TURN) server that hands out short-lived passwords: see <see cref="TurnSettings"/>.</summary>
         public TurnSettings Turn { get; set; } = new();
+
+        /// <summary>A hosted relay service that is asked for servers and passwords: see <see cref="RelaySettings"/>.</summary>
+        public RelaySettings Relay { get; set; } = new();
+    }
+
+    /// <summary>
+    /// A hosted relay (TURN) service, the kind with a free plan and nothing to
+    /// run yourself. The server asks it for the relay servers and short-lived
+    /// passwords and passes them on to the browsers, so the key of the
+    /// service never reaches a browser.
+    /// </summary>
+    public class RelaySettings
+    {
+        /// <summary>The address that answers with the servers (the "ICE servers" address of the service).</summary>
+        public string Url { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The key of the service, when it is sent in the Authorization header
+        /// (Cloudflare). Leave empty when the key is part of the address.
+        /// </summary>
+        public string Token { get; set; } = string.Empty;
+
+        /// <summary>How long the passwords handed out should work. A day covers any call.</summary>
+        public int TtlSeconds { get; set; } = 86400;
     }
 
     /// <summary>
@@ -64,6 +88,7 @@ namespace Miqat.Application.Services
         private readonly IPresenceTracker _presence;
         private readonly CallRegistry _registry;
         private readonly CallSettings _settings;
+        private readonly IRelayAccess _relay;
 
         public CallService(
             IUnitOfWork unitOfWork,
@@ -71,7 +96,8 @@ namespace Miqat.Application.Services
             PeopleDirectory people,
             IPresenceTracker presence,
             CallRegistry registry,
-            CallSettings settings)
+            CallSettings settings,
+            IRelayAccess relay)
         {
             _unitOfWork = unitOfWork;
             _chat = chat;
@@ -79,15 +105,19 @@ namespace Miqat.Application.Services
             _presence = presence;
             _registry = registry;
             _settings = settings;
+            _relay = relay;
         }
 
-        public CallSetupDto GetSetup(Guid userId)
+        public async Task<CallSetupDto> GetSetupAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             var servers = _settings.IceServers.Where(s => s.Urls.Count > 0).ToList();
 
             var turn = _settings.Turn;
             if (turn.Urls.Count > 0 && !string.IsNullOrWhiteSpace(turn.Secret))
                 servers.Add(TemporaryTurnAccess(turn, userId, DateTime.UtcNow));
+
+            // Empty when no relay service is set up, or it is not answering.
+            servers.AddRange(await _relay.GetServersAsync(cancellationToken));
 
             return new CallSetupDto { IceServers = servers, RingSeconds = _settings.RingSeconds };
         }

@@ -12,7 +12,7 @@ namespace Miqat.Application.Interfaces
     public interface ICallService
     {
         /// <summary>What a browser needs before it can call: the helper servers and how long to ring.</summary>
-        CallSetupDto GetSetup(Guid userId);
+        Task<CallSetupDto> GetSetupAsync(Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Starts ringing the friend of a chat. 409 when the friend is offline

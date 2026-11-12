@@ -155,4 +155,59 @@ public class CallTests
         Assert.Equal(turn.Urls, access.Urls);
         Assert.NotEqual(access.Credential, CallService.TemporaryTurnAccess(turn, Ben, Noon).Credential);
     }
+
+    [Fact]
+    public void A_relay_answer_as_a_list_is_read()
+    {
+        // The form with the key inside the address (Metered).
+        var servers = RelayAnswer.Parse("""
+            [ { "urls": "stun:stun.relay.example:80" },
+              { "urls": "turn:global.relay.example:443?transport=tcp", "username": "u1", "credential": "p1" } ]
+            """);
+
+        Assert.Equal(2, servers.Count);
+        Assert.Equal(new[] { "stun:stun.relay.example:80" }, servers[0].Urls);
+        Assert.Null(servers[0].Username);
+        Assert.Equal(new[] { "turn:global.relay.example:443?transport=tcp" }, servers[1].Urls);
+        Assert.Equal("u1", servers[1].Username);
+        Assert.Equal("p1", servers[1].Credential);
+    }
+
+    [Fact]
+    public void A_relay_answer_wrapped_in_iceServers_is_read_and_port_53_is_left_out()
+    {
+        // The form of Cloudflare. Browsers refuse port 53, so those addresses only slow a call down.
+        var servers = RelayAnswer.Parse("""
+            { "iceServers": [
+                { "urls": [ "stun:stun.example.com:3478", "stun:stun.example.com:53" ] },
+                { "urls": [ "turn:turn.example.com:3478?transport=udp", "turn:turn.example.com:53?transport=udp",
+                            "turns:turn.example.com:443?transport=tcp" ],
+                  "username": "name", "credential": "secret" } ] }
+            """);
+
+        Assert.Equal(2, servers.Count);
+        Assert.Equal(new[] { "stun:stun.example.com:3478" }, servers[0].Urls);
+        Assert.Equal(new[] { "turn:turn.example.com:3478?transport=udp", "turns:turn.example.com:443?transport=tcp" }, servers[1].Urls);
+        Assert.Equal("name", servers[1].Username);
+    }
+
+    [Fact]
+    public void A_relay_answer_with_one_server_object_is_read()
+    {
+        var servers = RelayAnswer.Parse("""
+            { "iceServers": { "urls": [ "turn:turn.example.com:3478" ], "username": "n", "credential": "c" } }
+            """);
+
+        var only = Assert.Single(servers);
+        Assert.Equal("c", only.Credential);
+    }
+
+    [Theory]
+    [InlineData("""{ "error": "bad key" }""")]
+    [InlineData("""[ { "urls": "https://not-a-relay.example" }, { "username": "x" }, 5 ]""")]
+    [InlineData("""{ "iceServers": [ { "urls": [ "turn:turn.example.com:53" ] } ] }""")]
+    public void A_relay_answer_with_nothing_usable_gives_no_servers(string json)
+    {
+        Assert.Empty(RelayAnswer.Parse(json));
+    }
 }

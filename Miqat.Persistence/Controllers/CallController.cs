@@ -26,6 +26,7 @@ namespace Miqat.API.Controllers
         /// devices reach each other (for RTCPeerConnection) and how long to ring.
         /// </summary>
         [HttpGet("setup")]
-        public IActionResult GetSetup() => Ok(_calls.GetSetup(_currentUser.RequireUserId()));
+        public async Task<IActionResult> GetSetup(CancellationToken cancellationToken) =>
+            Ok(await _calls.GetSetupAsync(_currentUser.RequireUserId(), cancellationToken));
     }
 }

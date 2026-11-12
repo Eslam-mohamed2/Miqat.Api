@@ -1,17 +1,16 @@
-﻿using Miqat.Application.Modules;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Miqat.Application.Common;
+using Miqat.Application.Modules;
 
 namespace Miqat.Application.Interfaces
 {
     public interface ITaskService
     {
         Task<IEnumerable<TaskDto>> GetAllTasks();
-        Task<IEnumerable<TaskDto>> GetTasksByUserId(Guid userId);
-        Task<IEnumerable<TaskDto>> GetTasksByUserIdPaged(Guid userId, int pageIndex, int pageSize);
+
+        /// <summary>Tasks the user created or is assigned to, optionally filtered.</summary>
+        Task<IEnumerable<TaskDto>> GetTasksByUserId(Guid userId, TaskFilter? filter = null);
+
+        Task<PagedResult<TaskDto>> GetTasksByUserIdPaged(Guid userId, int pageIndex, int pageSize);
         Task<IEnumerable<TaskDto>> GetTasksDueSoon(Guid userId, int withinDays = 3);
         Task<IEnumerable<TaskDto>> GetTasksByGroup(Guid groupId);
         Task<TaskDto?> GetTaskById(Guid id);

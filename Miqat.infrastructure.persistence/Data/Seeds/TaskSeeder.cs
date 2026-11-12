@@ -52,7 +52,7 @@ namespace Miqat.infrastructure.persistence.Data.Seeds
                     dto.GroupId != null ? Guid.Parse(dto.GroupId) : null,
                     dto.Tags,
                     recurrence,
-                    dto.RecurrenceEndDate != null ? ParseUtc(dto.RecurrenceEndDate) : null
+                    ParseUtcOrNull(dto.RecurrenceEndDate)
                 );
 
                 SetId(task, Guid.Parse(dto.Id));

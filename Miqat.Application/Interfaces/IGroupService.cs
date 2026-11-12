@@ -16,7 +16,11 @@ namespace Miqat.Application.Interfaces
         Task<GroupDto> CreateAsync(GroupDto dto);
         Task<bool> UpdateAsync(Guid id, GroupDto dto);
         Task<bool> DeleteAsync(Guid id);
-        Task<bool> AddMemberAsync(Guid groupId, Guid userId);
+        /// <param name="addedByUserId">
+        /// Who performed the add. Attributes the notification the new member
+        /// receives; null means system-generated.
+        /// </param>
+        Task<bool> AddMemberAsync(Guid groupId, Guid userId, Guid? addedByUserId = null);
         Task<bool> RemoveMemberAsync(Guid groupId, Guid userId);
     }
 }

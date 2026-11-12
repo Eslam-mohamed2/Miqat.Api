@@ -23,6 +23,21 @@ namespace Miqat.infrastructure.persistence.Data
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
         public DbSet<Friendship> Friendships => Set<Friendship>();
         public DbSet<Mention> Mentions => Set<Mention>();
+        public DbSet<Comment> Comments => Set<Comment>();
+        public DbSet<Board> Boards => Set<Board>();
+        public DbSet<UserCalendar> Calendars => Set<UserCalendar>();
+        public DbSet<CalendarEvent> Events => Set<CalendarEvent>();
+        public DbSet<EventAttendee> EventAttendees => Set<EventAttendee>();
+        public DbSet<EventException> EventExceptions => Set<EventException>();
+        public DbSet<CalendarSettings> CalendarSettings => Set<CalendarSettings>();
+        public DbSet<Reminder> Reminders => Set<Reminder>();
+        public DbSet<Device> Devices => Set<Device>();
+        public DbSet<Subtask> Subtasks => Set<Subtask>();
+        public DbSet<TaskDependency> TaskDependencies => Set<TaskDependency>();
+        public DbSet<Attachment> Attachments => Set<Attachment>();
+        public DbSet<Conversation> Conversations => Set<Conversation>();
+        public DbSet<ConversationParticipant> ConversationParticipants => Set<ConversationParticipant>();
+        public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

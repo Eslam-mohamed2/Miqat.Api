@@ -9,6 +9,10 @@ namespace Miqat.Domain.Enumerations
     public enum Gender
     {
         Male,
-        Female
+        Female,
+
+        // Stored as text (see UserConfiguration), so adding a member needs no
+        // migration. The profile form offers this option.
+        Other
     }
 }

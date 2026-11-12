@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -26,14 +27,28 @@ namespace Miqat.infrastructure.persistence.Data.Seeds
                 }) ?? new List<T>();
         }
 
+        /// <summary>
+        /// Parses a seed timestamp as UTC.
+        ///
+        /// The seed JSON carries dates as plain strings with no zone offset, and a
+        /// bare DateTime.Parse returns DateTimeKind.Unspecified. Npgsql refuses to
+        /// write those to a `timestamp with time zone` column, so every seeder threw
+        /// and the database came up empty. These values are UTC, so say so.
+        /// </summary>
+        protected static DateTime ParseUtc(string value) =>
+            DateTime.Parse(
+                value,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+        /// <inheritdoc cref="ParseUtc(string)"/>
+        protected static DateTime? ParseUtcOrNull(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? null : ParseUtc(value);
+
         protected static void SetId(object entity, Guid id) =>
             entity.GetType()
                   .BaseType!
                   .GetProperty("Id")!
                   .SetValue(entity, id);
-
-        // Npgsql only accepts UTC DateTimes for timestamptz columns
-        protected static DateTime ParseUtc(string value) =>
-            DateTime.SpecifyKind(DateTime.Parse(value), DateTimeKind.Utc);
     }
 }

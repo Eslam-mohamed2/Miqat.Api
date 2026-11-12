@@ -1,10 +1,5 @@
 ﻿using FluentValidation;
 using Miqat.Application.Modules;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Miqat.Application.Validators
 {
@@ -12,12 +7,17 @@ namespace Miqat.Application.Validators
     {
         public ResetPasswordValidator()
         {
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Email is required.")
+                .EmailAddress().WithMessage("Invalid email format.");
+
             RuleFor(x => x.Token)
                 .NotEmpty().WithMessage("Token is required.");
 
             RuleFor(x => x.NewPassword)
                 .NotEmpty().WithMessage("Password is required.")
                 .MinimumLength(8).WithMessage("Password must be at least 8 characters.")
+                .MaximumLength(128).WithMessage("Password cannot exceed 128 characters.")
                 .Matches("[A-Z]").WithMessage("Must contain uppercase letter.")
                 .Matches("[0-9]").WithMessage("Must contain a number.")
                 .Matches("[^a-zA-Z0-9]").WithMessage("Must contain a special character.");

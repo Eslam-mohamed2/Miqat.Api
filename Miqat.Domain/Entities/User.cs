@@ -25,6 +25,25 @@ namespace Miqat.Domain.Entities
         public string? GoogleId { get; set; }
         public bool IsGoogleAccount { get; set; } = false;
 
+        /// <summary>Short "about me" text shown on the profile.</summary>
+        public string? Bio { get; set; }
+
+        // Notification preferences (Settings > Notifications).
+        // Push = live pop-ups in the open app. The notification itself is always
+        // stored, so it still appears in the feed.
+        public bool PushNotificationsEnabled { get; set; } = true;
+        public bool EmailNotificationsEnabled { get; set; } = true;
+        public bool WeeklySummaryEnabled { get; set; } = false;
+
+        /// <summary>When the last weekly summary email went out, so a week is never sent twice.</summary>
+        public DateTime? WeeklySummarySentAt { get; set; }
+
+        /// <summary>
+        /// A new address the user asked to switch to, waiting for the code that
+        /// was sent to it. <see cref="Email"/> only changes once that code is confirmed.
+        /// </summary>
+        public string? PendingEmail { get; set; }
+
         // Google OAuth
         public virtual ICollection<OtpCode> OtpCodes { get; set; } = new List<OtpCode>();
         public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();

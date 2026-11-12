@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Miqat.Application.Interfaces;
 using Miqat.Domain.Enumerations;
@@ -25,125 +24,92 @@ namespace Miqat.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMentions()
         {
-            try
-            {
-                var currentUserId = GetCurrentUserId();
-                var mentions = await _mentionService.GetMentionsAsync(currentUserId);
-                return Ok(new { mentions });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
-            }
+            var mentions = await _mentionService.GetMentionsAsync(GetCurrentUserId());
+            return Ok(new { mentions });
         }
 
         [HttpGet("unread")]
         public async Task<IActionResult> GetUnreadMentions()
         {
-            try
-            {
-                var currentUserId = GetCurrentUserId();
-                var unreadMentions = await _mentionService.GetUnreadMentionsAsync(currentUserId);
-                return Ok(new { unreadMentions });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
-            }
+            var unreadMentions = await _mentionService.GetUnreadMentionsAsync(GetCurrentUserId());
+            return Ok(new { unreadMentions });
         }
 
         [HttpGet("unread-count")]
         public async Task<IActionResult> GetUnreadMentionsCount()
         {
-            try
-            {
-                var currentUserId = GetCurrentUserId();
-                var count = await _mentionService.GetUnreadMentionsCountAsync(currentUserId);
-                return Ok(new { unreadCount = count });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
-            }
+            var count = await _mentionService.GetUnreadMentionsCountAsync(GetCurrentUserId());
+            return Ok(new { unreadCount = count });
         }
 
-        [HttpPut("{mentionId}/read")]
+        [HttpPut("{mentionId:guid}/read")]
         public async Task<IActionResult> MarkMentionAsRead(Guid mentionId)
         {
-            try
-            {
-                var currentUserId = GetCurrentUserId();
-                var result = await _mentionService.MarkMentionAsReadAsync(mentionId, currentUserId);
-                if (!result)
-                    return NotFound(new { message = "Mention not found or not authorized." });
+            var result = await _mentionService.MarkMentionAsReadAsync(mentionId, GetCurrentUserId());
+            if (!result)
+                return NotFound(new { message = "Mention not found or not authorized." });
 
-                return Ok(new { message = "Mention marked as read." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
-            }
+            return Ok(new { message = "Mention marked as read." });
+        }
+
+        /// <summary>Marks every unread mention as read in one call.</summary>
+        [HttpPut("read-all")]
+        public async Task<IActionResult> MarkAllMentionsAsRead()
+        {
+            var updated = await _mentionService.MarkAllMentionsAsReadAsync(GetCurrentUserId());
+            return Ok(new { message = "All mentions marked as read.", updated });
         }
 
         [HttpPost("parse")]
         public async Task<IActionResult> ParseMentions([FromBody] ParseMentionsRequest request)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(request.Text))
-                    return BadRequest(new { message = "Text is required." });
+            if (string.IsNullOrWhiteSpace(request.Text))
+                return BadRequest(new { message = "Text is required." });
 
-                var mentionedUserIds = await _mentionService.ParseMentionsFromTextAsync(request.Text);
-                return Ok(new { mentionedUserIds });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
-            }
+            if (request.Text.Length > ParseMentionsRequest.MaxTextLength)
+                return BadRequest(new { message = $"Text cannot exceed {ParseMentionsRequest.MaxTextLength} characters." });
+
+            var mentionedUserIds = await _mentionService.ParseMentionsFromTextAsync(request.Text);
+            return Ok(new { mentionedUserIds });
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateMentions([FromBody] CreateMentionsRequest request)
         {
-            try
-            {
-                var currentUserId = GetCurrentUserId();
+            if (request.MentionedUserIds == null || !request.MentionedUserIds.Any())
+                return BadRequest(new { message = "At least one mentioned user ID is required." });
 
-                if (request.MentionedUserIds == null || !request.MentionedUserIds.Any())
-                    return BadRequest(new { message = "At least one mentioned user ID is required." });
+            if (request.EntityId == Guid.Empty)
+                return BadRequest(new { message = "EntityId is required." });
 
-                if (request.EntityId == Guid.Empty)
-                    return BadRequest(new { message = "EntityId is required." });
+            if (!Enum.IsDefined(request.EntityType))
+                return BadRequest(new { message = "EntityType must be Project, Task or Comment." });
 
-                var createdMentions = await _mentionService.CreateMentionsAsync(
-                    currentUserId,
-                    request.MentionedUserIds,
-                    request.EntityType,
-                    request.EntityId
-                );
+            var createdMentions = await _mentionService.CreateMentionsAsync(
+                GetCurrentUserId(),
+                request.MentionedUserIds,
+                request.EntityType,
+                request.EntityId
+            );
 
-                return Ok(new { message = "Mentions created successfully.", mentions = createdMentions });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
-            }
+            return Ok(new { message = "Mentions created successfully.", mentions = createdMentions });
         }
     }
 
     public class ParseMentionsRequest
     {
+        public const int MaxTextLength = 5000;
+
         public string Text { get; set; } = string.Empty;
     }
 
     public class CreateMentionsRequest
     {
         public IEnumerable<Guid> MentionedUserIds { get; set; } = new List<Guid>();
+
+        /// <summary>Project, Task or Comment (name or number).</summary>
         public EntityType EntityType { get; set; }
+
         public Guid EntityId { get; set; }
     }
 }

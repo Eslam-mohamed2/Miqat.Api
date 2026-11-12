@@ -7,4 +7,9 @@ public class MemberDto
     public string? Email { get; set; }
     public string? ProfilePictureUrl { get; set; }
     public DateTime JoinedAt { get; set; }
+
+    /// <summary>"Owner" or "Member".</summary>
+    public string Role { get; set; } = "Member";
+
+    public bool IsOwner { get; set; }
 }

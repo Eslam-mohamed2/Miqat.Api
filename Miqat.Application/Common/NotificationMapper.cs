@@ -1,17 +1,32 @@
 ﻿using Miqat.Application.Modules;
 using Miqat.Domain.Entities;
-using Riok.Mapperly.Abstractions;
 
 namespace Miqat.Application.Common;
 
-[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.None)]
-public partial class NotificationMapper
+/// <summary>
+/// Notification -> NotificationDto. The triggering user is read through a
+/// null-safe navigation (system notifications have none).
+/// LinkedEntityName needs a lookup and is filled in by NotificationService.
+/// </summary>
+public class NotificationMapper
 {
-    [MapProperty(nameof(Notification.Type), nameof(NotificationDto.Type))]
-    [MapProperty([nameof(Notification.TriggeredByUser), nameof(User.FullName)], nameof(NotificationDto.TriggeredByUserName))]
-    public partial NotificationDto MapToDto(Notification notification);
+    public NotificationDto MapToDto(Notification notification) => new()
+    {
+        Id = notification.Id,
+        Title = notification.Title,
+        Message = notification.Message,
+        IsRead = notification.IsRead,
+        Type = notification.Type.ToString(),
+        RecipientUserId = notification.RecipientUserId,
+        TriggeredByUserId = notification.TriggeredByUserId,
+        TriggeredByUserName = notification.TriggeredByUser?.FullName,
+        TriggeredByUserProfilePictureUrl = notification.TriggeredByUser?.ProfilePictureUrl,
+        LinkedEntityId = notification.LinkedEntityId,
+        LinkedEntityType = notification.LinkedEntityType,
+        LinkedCommentId = notification.LinkedCommentId,
+        CreatedAt = notification.CreatedAt
+    };
 
-    public partial IEnumerable<NotificationDto> MapToDtos(IEnumerable<Notification> notifications);
-
-    private string MapEnumToString(Miqat.Domain.Enumerations.NotificationType type) => type.ToString();
+    public IEnumerable<NotificationDto> MapToDtos(IEnumerable<Notification> notifications)
+        => notifications.Select(MapToDto).ToList();
 }

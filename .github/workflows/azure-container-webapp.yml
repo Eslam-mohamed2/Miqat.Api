@@ -43,6 +43,12 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      # Gates the deploy on the test suite. The pipeline previously published
+      # straight from a checkout without running anything, so a change that broke
+      # the authorization boundary would have shipped unnoticed.
+      - name: Test
+        run: dotnet test Miqat.Tests/Miqat.Tests.csproj -c Release --verbosity minimal
+
       - name: Build and publish
         run: dotnet publish Miqat.Persistence/Miqat.API.csproj -c Release -o ./publish
 

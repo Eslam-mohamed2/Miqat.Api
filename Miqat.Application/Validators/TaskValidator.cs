@@ -1,10 +1,7 @@
 ﻿using FluentValidation;
+using Miqat.Application.Common;
 using Miqat.Application.Modules;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Miqat.Domain.Enumerations;
 
 namespace Miqat.Application.Validators
 {
@@ -20,19 +17,37 @@ namespace Miqat.Application.Validators
                 .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters.")
                 .When(x => x.Description != null);
 
+            RuleFor(x => x.Tags)
+                .MaximumLength(500).WithMessage("Tags cannot exceed 500 characters.")
+                .When(x => x.Tags != null);
+
             RuleFor(x => x.Priority)
                 .NotEmpty().WithMessage("Priority is required.")
-                .Must(p => new[] { "Low", "Medium", "High", "Critical" }.Contains(p))
+                .Must(p => EnumText.TryParseDefined<Priority>(p, out _))
                 .WithMessage("Priority must be Low, Medium, High or Critical.");
 
+            // The enum members are In_progress / On_hold. EnumText also accepts
+            // the InProgress / OnHold spellings, and the service parses with the
+            // same helper - so a value that passes here can never fail to apply.
             RuleFor(x => x.Status)
-                .Must(s => new[] { "Pending", "InProgress", "Completed", "Cancelled" }.Contains(s))
-                .WithMessage("Invalid status value.")
+                .Must(s => EnumText.TryParseTaskStatus(s, out _))
+                .WithMessage("Status must be one of: Pending, In_progress, Completed, Cancelled, On_hold.")
                 .When(x => !string.IsNullOrEmpty(x.Status));
 
-            RuleFor(x => x.DueDate)
-                .GreaterThan(DateTime.UtcNow).WithMessage("Due date must be in the future.")
-                .When(x => x.DueDate.HasValue);
+            RuleFor(x => x.Recurrence)
+                .Must(r => EnumText.TryParseDefined<RecurrencePattern>(r, out _))
+                .WithMessage("Recurrence must be None, Daily, Weekly or Monthly.")
+                .When(x => !string.IsNullOrEmpty(x.Recurrence));
+
+            RuleFor(x => x.StartDate)
+                .LessThanOrEqualTo(x => x.DueDate!.Value)
+                .WithMessage("Start date cannot be after the due date.")
+                .When(x => x.StartDate.HasValue && x.DueDate.HasValue);
+
+            // "Due date must be in the future" is a create-only rule and lives in
+            // TaskService.CreateAsync. Here it would also run on updates - the
+            // body of a PUT does not have to carry the id - and make an overdue
+            // task impossible to complete or reassign.
         }
     }
 }

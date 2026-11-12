@@ -6,6 +6,9 @@
     <Project Path="Miqat.Application/Miqat.Application.csproj" />
     <Project Path="Miqat.Domain/Miqat.Domain.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Miqat.Tests/Miqat.Tests.csproj" />
+  </Folder>
   <Folder Name="/Infrastructure/">
     <Project Path="Miqat.infrastructure.persistence/Miqat.infrastructure.persistence.csproj" />
     <Project Path="Miqat.Infrastructure/Miqat.Infrastructure.csproj" />

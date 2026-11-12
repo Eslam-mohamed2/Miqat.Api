@@ -25,7 +25,15 @@ namespace Miqat.API.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);
+                // ApiException is an expected business outcome (404, 403, ...), not a fault.
+                if (ex is ApiException apiEx && apiEx.StatusCode < 500)
+                    _logger.LogInformation("Request rejected ({StatusCode}): {Message}", apiEx.StatusCode, ex.Message);
+                else
+                    _logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);
+
+                // Too late to write an error body once the response has started.
+                if (context.Response.HasStarted) throw;
+
                 await HandleExceptionAsync(context, ex);
             }
         }

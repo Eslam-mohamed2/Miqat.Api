@@ -34,6 +34,28 @@ namespace Miqat.Application.Services
             return friendIds.ToHashSet();
         }
 
+        /// <summary>Ids of everyone the user has blocked or is blocked by.</summary>
+        public async Task<HashSet<Guid>> GetBlockedIdsAsync(Guid userId)
+        {
+            var blockedIds = await _unitOfWork.Repository<Friendship>().SelectAsync(
+                f => f.Status == FriendshipStatus.Blocked && !f.IsDeleted &&
+                     (f.SenderId == userId || f.ReceiverId == userId),
+                f => f.SenderId == userId ? f.ReceiverId : f.SenderId);
+
+            return blockedIds.ToHashSet();
+        }
+
+        /// <summary>Ids of everyone who shares a group chat with the user, without the user.</summary>
+        public async Task<HashSet<Guid>> GetGroupChatMateIdsAsync(Guid userId)
+        {
+            var mateIds = await _unitOfWork.Repository<ConversationParticipant>().SelectAsync(
+                p => p.UserId != userId && p.Conversation.IsGroup &&
+                     p.Conversation.Participants.Any(mine => mine.UserId == userId),
+                p => p.UserId);
+
+            return mateIds.ToHashSet();
+        }
+
         /// <summary>Ids of the live projects the user owns or is a member of.</summary>
         public async Task<HashSet<Guid>> GetProjectIdsAsync(Guid userId) =>
             (await GetProjectsAsync(userId)).Select(p => p.Id).ToHashSet();

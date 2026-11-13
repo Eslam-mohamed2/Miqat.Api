@@ -17,6 +17,9 @@ public class GroupDto
 
     /// <summary>Completed subset of <see cref="TaskCount"/>, for progress display.</summary>
     public int CompletedTaskCount { get; set; }
+
+    /// <summary>Comments and replies in the project's discussion.</summary>
+    public int CommentCount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

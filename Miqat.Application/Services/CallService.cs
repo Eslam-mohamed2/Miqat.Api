@@ -148,6 +148,10 @@ namespace Miqat.Application.Services
             if (!people.Contains(callerId))
                 throw new ApiException("You are not in this chat.", 403);
 
+            // A group has a call of its own kind, with everyone in it: see GroupCallService.
+            if (await _unitOfWork.Repository<Conversation>().AnyAsync(c => c.Id == conversationId && c.IsGroup))
+                throw new ApiException("This is a group chat. Start a group call instead.", 400);
+
             var calleeId = people.First(id => id != callerId);
             if (!(await _people.GetFriendIdsAsync(callerId)).Contains(calleeId))
                 throw new ApiException("You can only call your friends.", 403);
@@ -178,6 +182,7 @@ namespace Miqat.Application.Services
                 throw new ApiException($"{calleeName} is not online right now. They will see a missed call.", 409);
             }
 
+            // Busy counts group calls too: a person is on one call at a time.
             if (!_registry.TryStart(call, out var busyUserId))
             {
                 if (busyUserId == callerId)

@@ -4,17 +4,32 @@ using Miqat.Domain.Enumerations;
 namespace Miqat.Domain.Entities;
 
 /// <summary>
-/// A chat. Today every chat is between two friends ("direct"); the people in it
-/// are rows of <see cref="ConversationParticipant"/>, so a chat with more people
-/// needs no change to this table.
+/// A chat: between two friends ("direct") or a named group of people. The
+/// people in it are rows of <see cref="ConversationParticipant"/> either way.
 /// </summary>
 public class Conversation : BaseEntity
 {
+    public const int MaxNameLength = 60;
+
+    /// <summary>How many people a group can hold, its creator included.</summary>
+    public const int MaxGroupSize = 50;
+
+    /// <summary>A group starts with its creator and at least this many others.</summary>
+    public const int MinOthersInNewGroup = 2;
+
     /// <summary>
     /// The two people of a direct chat as one value ("smaller id:larger id").
-    /// Unique, so a pair can never end up with two chats.
+    /// Unique, so a pair can never end up with two chats. Null for a group.
     /// </summary>
     public string? DirectKey { get; private set; }
+
+    public bool IsGroup { get; private set; }
+
+    /// <summary>The name of a group. Null for a direct chat.</summary>
+    public string? Name { get; private set; }
+
+    /// <summary>Who created the group. Null for a direct chat.</summary>
+    public Guid? CreatedByUserId { get; private set; }
 
     /// <summary>When the newest message was sent. Null while the chat is still empty.</summary>
     public DateTime? LastMessageAt { get; private set; }
@@ -33,6 +48,14 @@ public class Conversation : BaseEntity
         return new Conversation { DirectKey = DirectKeyFor(userId, otherUserId) };
     }
 
+    /// <summary>A new, empty group. Its participant rows are created by the caller.</summary>
+    public static Conversation Group(string name, Guid createdByUserId) => new()
+    {
+        IsGroup = true,
+        Name = RequireName(name),
+        CreatedByUserId = createdByUserId
+    };
+
     /// <summary>The same value whichever of the two asks.</summary>
     public static string DirectKeyFor(Guid userId, Guid otherUserId)
     {
@@ -40,13 +63,50 @@ public class Conversation : BaseEntity
         return $"{first:N}:{second:N}";
     }
 
+    /// <summary>Gives a group a new name. False when it already has that name.</summary>
+    public bool Rename(string name)
+    {
+        if (!IsGroup) throw new InvalidOperationException("Only a group chat has a name.");
+
+        var text = RequireName(name);
+        if (text == Name) return false;
+
+        Name = text;
+        SetUpdated();
+        return true;
+    }
+
     public void MessageSent(DateTime at)
     {
         if (LastMessageAt == null || at > LastMessageAt) LastMessageAt = at;
     }
+
+    /// <summary>
+    /// Who becomes admin when a group is left without one: the person who has
+    /// been in it longest. Null while the group still has an admin, or is empty.
+    /// </summary>
+    public static ConversationParticipant? NextAdmin(IEnumerable<ConversationParticipant> remaining)
+    {
+        var people = remaining.ToList();
+        return people.Any(p => p.IsAdmin)
+            ? null
+            : people.OrderBy(p => p.CreatedAt).ThenBy(p => p.Id).FirstOrDefault();
+    }
+
+    // No parameter name on purpose: the API answers 400 with this text as it is.
+    private static string RequireName(string? name)
+    {
+        var text = name?.Trim();
+        if (string.IsNullOrEmpty(text))
+            throw new ArgumentException("A group needs a name.");
+        if (text.Length > MaxNameLength)
+            throw new ArgumentException($"A group name cannot be longer than {MaxNameLength} characters.");
+
+        return text;
+    }
 }
 
-/// <summary>One person in a chat, and how far they have read it.</summary>
+/// <summary>One person in a chat, and how far they have read it. The row's creation time is when they joined.</summary>
 public class ConversationParticipant : BaseEntity
 {
     public Guid ConversationId { get; private set; }
@@ -58,10 +118,14 @@ public class ConversationParticipant : BaseEntity
     /// <summary>Everything sent up to this moment counts as read. Null: nothing read yet.</summary>
     public DateTime? LastReadAt { get; private set; }
 
-    public ConversationParticipant(Guid conversationId, Guid userId)
+    /// <summary>May rename the group, remove members and make others admin. Always false in a direct chat.</summary>
+    public bool IsAdmin { get; private set; }
+
+    public ConversationParticipant(Guid conversationId, Guid userId, bool isAdmin = false)
     {
         ConversationId = conversationId;
         UserId = userId;
+        IsAdmin = isAdmin;
     }
 
     private ConversationParticipant() { }
@@ -72,6 +136,16 @@ public class ConversationParticipant : BaseEntity
         if (LastReadAt != null && at <= LastReadAt) return false;
 
         LastReadAt = at;
+        return true;
+    }
+
+    /// <summary>False when the person already is an admin.</summary>
+    public bool MakeAdmin()
+    {
+        if (IsAdmin) return false;
+
+        IsAdmin = true;
+        SetUpdated();
         return true;
     }
 }
@@ -96,10 +170,23 @@ public class ChatMessage : BaseEntity
     // "Missed call"). Such a message has no text; its sender is the caller.
     public CallOutcome? CallOutcome { get; private set; }
     public bool? CallVideo { get; private set; }
-    /// <summary>How long the two talked. 0 unless the call was answered.</summary>
+    /// <summary>How long the call lasted. 0 unless it was answered.</summary>
     public int? CallSeconds { get; private set; }
+    /// <summary>How many different people took part in a group call. Null for a call between two.</summary>
+    public int? CallParticipants { get; private set; }
+
+    // What happens to a group shows as a line too ("Sara added Omar"). Its
+    // sender is who did it, and its text is that sentence in plain English
+    // for apps that do not know these lines.
+    public ChatGroupEvent? GroupEvent { get; private set; }
+    /// <summary>The person added or removed.</summary>
+    public Guid? TargetUserId { get; private set; }
+    public virtual User? TargetUser { get; private set; }
+    /// <summary>The name a group was created with or renamed to.</summary>
+    public string? GroupName { get; private set; }
 
     public bool IsCall => CallOutcome != null;
+    public bool IsGroupEvent => GroupEvent != null;
 
     public ChatMessage(Guid conversationId, Guid senderId, string body)
     {
@@ -120,9 +207,34 @@ public class ChatMessage : BaseEntity
         CallSeconds = outcome == Enumerations.CallOutcome.Completed ? Math.Max(0, seconds) : 0
     };
 
+    /// <summary>
+    /// The line a group call leaves in the chat: missed when nobody but the
+    /// one who started it ever joined.
+    /// </summary>
+    public static ChatMessage ForGroupCall(Guid conversationId, Guid starterId, bool video, int seconds, int tookPart)
+    {
+        var line = ForCall(conversationId, starterId, video,
+            tookPart > 1 ? Enumerations.CallOutcome.Completed : Enumerations.CallOutcome.Missed, seconds);
+        line.CallParticipants = Math.Max(1, tookPart);
+        return line;
+    }
+
+    /// <summary>The line a change to a group leaves in the chat.</summary>
+    public static ChatMessage ForGroupEvent(
+        Guid conversationId, Guid actorId, ChatGroupEvent what, string sentence, Guid? targetUserId = null, string? groupName = null) => new()
+    {
+        ConversationId = conversationId,
+        SenderId = actorId,
+        GroupEvent = what,
+        Body = sentence.Length > MaxBodyLength ? sentence[..MaxBodyLength] : sentence,
+        TargetUserId = targetUserId,
+        GroupName = groupName
+    };
+
     public void Edit(string body)
     {
         if (IsCall) throw new InvalidOperationException("A call cannot be edited.");
+        if (IsGroupEvent) throw new InvalidOperationException("A line about the group cannot be edited.");
         if (IsDeleted) throw new InvalidOperationException("A deleted message cannot be edited.");
 
         var text = RequireBody(body);

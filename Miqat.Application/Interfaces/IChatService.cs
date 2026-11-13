@@ -4,8 +4,10 @@ using Miqat.Domain.Enumerations;
 namespace Miqat.Application.Interfaces
 {
     /// <summary>
-    /// Chats between friends. Every change is also pushed live to the people in
-    /// the chat: "chatMessage", "chatMessageChanged" and "chatRead".
+    /// Chats between two friends and in groups: the messages, the read marks
+    /// and the chat list. Every change is also pushed live to the people in
+    /// the chat: "chatMessage", "chatMessageChanged" and "chatRead". Who is in
+    /// a group is the business of <see cref="IGroupChatService"/>.
     /// </summary>
     public interface IChatService
     {
@@ -49,6 +51,52 @@ namespace Miqat.Application.Interfaces
         /// shows it live to both sides. Called by the call service, never by a client.
         /// </summary>
         Task<ChatMessageDto> LogCallAsync(Guid conversationId, Guid callerId, bool video, CallOutcome outcome, int seconds);
+
+        /// <summary>
+        /// Writes a finished group call into its chat as a message from the one
+        /// who started it; it is read for everyone who took part. Null when the
+        /// group is gone. Called by the group call service, never by a client.
+        /// </summary>
+        Task<ChatMessageDto?> LogGroupCallAsync(Guid conversationId, Guid starterId, bool video, int seconds, IReadOnlyCollection<Guid> tookPart);
+
+        /// <summary>
+        /// Shows a message that was just saved to everyone in its chat
+        /// ("chatMessage"). For the lines a change to a group leaves in the chat.
+        /// </summary>
+        Task<ChatMessageDto?> AnnounceAsync(Guid messageId);
+
+        /// <summary>Tells everyone in a group chat who is in it and what it is called now ("chatGroupChanged").</summary>
+        Task AnnounceGroupAsync(Guid conversationId);
+    }
+
+    /// <summary>
+    /// Group chats: creating one, its name, and who is in it. Everything that
+    /// happens leaves a line in the chat and is pushed live ("chatGroupChanged",
+    /// and "chatGroupRemoved" to someone who is no longer in it).
+    /// </summary>
+    public interface IGroupChatService
+    {
+        /// <summary>A new group with the caller as its admin and at least two of their friends.</summary>
+        Task<ConversationDto> CreateAsync(CreateGroupDto dto);
+
+        /// <summary>Admins only.</summary>
+        Task<ConversationDto> RenameAsync(Guid conversationId, RenameGroupDto dto);
+
+        /// <summary>Any member adds friends of their own; people already in the group are skipped.</summary>
+        Task<ConversationDto> AddMembersAsync(Guid conversationId, AddMembersDto dto);
+
+        /// <summary>Admins only, and never oneself: that is leaving.</summary>
+        Task<ConversationDto> RemoveMemberAsync(Guid conversationId, Guid userId);
+
+        /// <summary>Admins only. The person stays an admin from then on.</summary>
+        Task<ConversationDto> MakeAdminAsync(Guid conversationId, Guid userId);
+
+        /// <summary>
+        /// The caller leaves. When they were the last admin, the member who has
+        /// been in the group longest becomes admin; when they were the last
+        /// member, the group is deleted.
+        /// </summary>
+        Task LeaveAsync(Guid conversationId);
     }
 
     /// <summary>

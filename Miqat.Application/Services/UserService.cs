@@ -207,9 +207,33 @@ namespace Miqat.Application.Services
             entity.SoftDelete(actingUserId.ToString());
             await RevokeSessionsAsync(id);
             await EndFriendshipsAsync(id, actingUserId);
+            await LeaveGroupChatsAsync(id);
 
             await _unitOfWork.CompleteAsync();
             return true;
+        }
+
+        /// <summary>
+        /// A deleted account leaves its group chats, by the rules of leaving:
+        /// a group it was the last admin of gets the member who has been in it
+        /// longest as admin, and a group with nobody left is deleted.
+        /// </summary>
+        private async Task LeaveGroupChatsAsync(Guid userId)
+        {
+            var participants = _unitOfWork.Repository<ConversationParticipant>();
+            var seats = (await participants.FindAsync(p => p.UserId == userId && p.Conversation.IsGroup)).ToList();
+
+            foreach (var seat in seats)
+            {
+                var others = (await participants.FindAsync(
+                    p => p.ConversationId == seat.ConversationId && p.UserId != userId)).ToList();
+
+                participants.Delete(seat);
+                if (others.Count > 0)
+                    Conversation.NextAdmin(others)?.MakeAdmin();
+                else if (await _unitOfWork.Repository<Conversation>().GetByIdAsync(seat.ConversationId) is { } empty)
+                    _unitOfWork.Repository<Conversation>().Delete(empty);
+            }
         }
 
         /// <summary>

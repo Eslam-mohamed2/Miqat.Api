@@ -126,6 +126,10 @@ public sealed class SwaggerExamplesFilter : IDocumentFilter
             case "groupid":
                 return (s.GroupId, "The demo account owns no project. Create one with POST /api/Group, then reload this page.");
             case "commentid":
+                // A project's discussion has comments of its own.
+                if (call.Area == "Group")
+                    return (s.GroupCommentId, "The demo account has written nothing in a project's discussion yet. Add a comment with POST /api/Group/{groupId}/comments, then reload this page.");
+
                 return (s.CommentId, "The demo account has written no comment yet. Add one with POST /api/Task/{taskId}/comments, then reload this page.");
             case "mentionid":
                 return (s.MentionId, "Nobody has mentioned the demo account.");
@@ -144,11 +148,17 @@ public sealed class SwaggerExamplesFilter : IDocumentFilter
                 return (s.BlockedUserId, "The demo account has blocked nobody. Block someone with PUT /api/Friends/block/{userToBlockId}, then reload this page.");
 
             case "conversationid":
-                return (s.ConversationId, "The demo account has no chat yet. Open one with POST /api/Chat/with/{userId}, then reload this page.");
+                // Name, members and leaving only exist for a group chat.
+                return IsGroupChatPath(call.Path)
+                    ? (s.GroupConversationId, "The demo account is in no group chat. Create one with POST /api/Chat/groups, then reload this page.")
+                    : (s.ConversationId, "The demo account has no chat yet. Open one with POST /api/Chat/with/{userId}, then reload this page.");
             case "messageid":
                 return (s.ChatMessageId, "The demo account has sent no chat message. Send one with POST /api/Chat/{conversationId}/messages, then reload this page.");
 
             case "userid":
+                if (call.Area == "Chat" && IsGroupChatPath(call.Path))
+                    return (s.GroupChatMemberUserId, "The demo account is in no group chat with other people. Create one with POST /api/Chat/groups, then reload this page.");
+
                 if (call.Area == "Chat")
                     return (s.ContactUserId ?? s.OtherUserId, "The demo account has no friends to chat with.");
 
@@ -167,6 +177,9 @@ public sealed class SwaggerExamplesFilter : IDocumentFilter
                 return (null, $"No example row is known for '{name}'.");
         }
     }
+
+    private static bool IsGroupChatPath(string path) =>
+        path.EndsWith("/name") || path.EndsWith("/leave") || path.Contains("/members");
 
     /// <summary>
     /// Which event an address is about depends on what is done to it: single
@@ -394,6 +407,7 @@ public sealed class SwaggerExamplesFilter : IDocumentFilter
                 return Text(isProject ? fake.ProjectDescription : isEvent ? fake.EventDescription : fake.TaskDescription);
             case "name":
                 if (schemaName.Contains("Device", StringComparison.OrdinalIgnoreCase)) return Text("Chrome on Windows");
+                if (schemaName is "CreateGroupDto" or "RenameGroupDto") return Text(fake.ChatGroupName);
                 return Text(isBoard ? fake.BoardName : isCalendar ? fake.CalendarName : fake.ProjectName);
             case "color": return Text(fake.Color);
             case "tags": return Text(fake.TaskTags);
@@ -445,8 +459,16 @@ public sealed class SwaggerExamplesFilter : IDocumentFilter
             case "attendeeids":
             case "userids":
                 var people = new OpenApiArray();
-                if (s.ContactUserId.HasValue) people.Add(Text(s.ContactUserId.Value.ToString()));
+                // Adding to a group chat: a friend who is not in it yet.
+                var personId = schemaName == "AddMembersDto" ? s.GroupChatCandidateUserId ?? s.ContactUserId : s.ContactUserId;
+                if (personId.HasValue) people.Add(Text(personId.Value.ToString()));
                 return people;
+
+            // A new group chat starts with two friends.
+            case "memberids":
+                var members = new OpenApiArray();
+                foreach (var friendId in s.FriendIds) members.Add(Text(friendId.ToString()));
+                return members;
 
             case "dependsontaskid": return IdOrNothing(s.UnlinkedTaskId, s);
             case "newemail": return Text(fake.NewEmail);
@@ -467,8 +489,13 @@ public sealed class SwaggerExamplesFilter : IDocumentFilter
             case "entitytype": return Text("Task");
             case "mentioneduserids":
                 var mentioned = new OpenApiArray();
-                if (s.OtherUserId.HasValue) mentioned.Add(Text(s.OtherUserId.Value.ToString()));
+                // In a project's discussion only people on the project can be mentioned.
+                var mentionedId = schemaName == "CreateGroupCommentDto" ? s.GroupMemberUserId ?? s.OtherUserId : s.OtherUserId;
+                if (mentionedId.HasValue) mentioned.Add(Text(mentionedId.Value.ToString()));
                 return mentioned;
+
+            // A comment of its own; give the id of another comment here to answer it.
+            case "parentid": return null;
         }
 
         return Fallback(document, name, property);

@@ -139,6 +139,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IBoardService, BoardService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IGroupCommentService, GroupCommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
@@ -165,10 +166,12 @@ builder.Services.AddScoped<IDeviceService, DeviceService>();
 
 // Chats between friends, and who has the app open (kept in memory, see PresenceTracker).
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IGroupChatService, GroupChatService>();
 builder.Services.AddSingleton<IPresenceTracker, Miqat.API.Hubs.PresenceTracker>();
 
 // Voice and video calls: the calls in progress are kept in memory too.
 builder.Services.AddScoped<ICallService, CallService>();
+builder.Services.AddScoped<IGroupCallService, GroupCallService>();
 builder.Services.AddSingleton<CallRegistry>();
 builder.Services.AddSingleton(
     builder.Configuration.GetSection("Calls").Get<CallSettings>() ?? new CallSettings());

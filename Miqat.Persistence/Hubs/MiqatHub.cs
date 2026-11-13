@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Miqat.Application.Common;
 using Miqat.Application.Interfaces;
+using Miqat.Application.Modules;
 using Miqat.Application.Services;
 
 namespace Miqat.API.Hubs
@@ -17,7 +18,8 @@ namespace Miqat.API.Hubs
     /// It also knows who is online (their friends are told when that changes),
     /// carries "is typing", and sets up voice and video calls: it rings the
     /// friend and passes the two browsers' set-up messages to each other. The
-    /// call itself never passes through here.
+    /// call itself never passes through here. A group call works the same way
+    /// between every pair of the people in it.
     /// </para>
     /// </summary>
     [Authorize]
@@ -27,16 +29,19 @@ namespace Miqat.API.Hubs
         private readonly PeopleDirectory _people;
         private readonly IChatService _chat;
         private readonly ICallService _calls;
+        private readonly IGroupCallService _groupCalls;
         private readonly ILogger<MiqatHub> _logger;
 
         public MiqatHub(
-            IPresenceTracker presence, PeopleDirectory people, IChatService chat, ICallService calls, ILogger<MiqatHub> logger)
+            IPresenceTracker presence, PeopleDirectory people, IChatService chat, ICallService calls,
+            IGroupCallService groupCalls, ILogger<MiqatHub> logger)
         {
             _logger = logger;
             _presence = presence;
             _people = people;
             _chat = chat;
             _calls = calls;
+            _groupCalls = groupCalls;
         }
 
         public static string UserGroup(string userId) => $"user:{userId}";
@@ -64,6 +69,16 @@ namespace Miqat.API.Hubs
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Ending the call of a closed connection failed");
+            }
+
+            // In a group call the person leaves; the call goes on for the others.
+            try
+            {
+                await _groupCalls.LeaveForConnectionAsync(Context.ConnectionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Leaving the group call of a closed connection failed");
             }
 
             if (CurrentUserId is Guid userId && _presence.Disconnected(userId))
@@ -146,6 +161,43 @@ namespace Miqat.API.Hubs
                 .SendAsync(CallService.Events.Ended, new { callId = ended.Call.Id, reason = ended.Reason });
         }
 
+        // ── Group calls ───────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Starts the call of a group chat from this tab: everyone in the chat
+        /// gets "groupCallStarted", and the members who can pick up are rung
+        /// ("groupCallIncoming"). When the group already has a call, this joins it.
+        /// </summary>
+        public Task<GroupCallDto> StartGroupCall(Guid conversationId, bool video) =>
+            GuardedAsync(() => _groupCalls.StartAsync(RequireUserId(), Context.ConnectionId, conversationId, video));
+
+        /// <summary>
+        /// Joins a group call in this tab and answers who is in it. The one
+        /// who joins then offers a connection to each of the others.
+        /// </summary>
+        public Task<GroupCallDto> JoinGroupCall(Guid callId) =>
+            GuardedAsync(() => _groupCalls.JoinAsync(RequireUserId(), Context.ConnectionId, callId));
+
+        /// <summary>Leaves a group call. It ends when the last person has left, and then appears in the chat.</summary>
+        public Task LeaveGroupCall(Guid callId) => _groupCalls.LeaveAsync(RequireUserId(), callId);
+
+        /// <summary>"Not now": stops the ringing in the other tabs of this person.</summary>
+        public Task DismissGroupCall(Guid callId) => _groupCalls.DismissAsync(RequireUserId(), callId);
+
+        /// <summary>
+        /// Passes a set-up message (offer, answer, network candidate) to one
+        /// other person of a group call. Unless both are in the call, and this
+        /// is the sender's tab of the call, it goes nowhere.
+        /// </summary>
+        public async Task SendGroupCallSignal(Guid callId, Guid toUserId, JsonElement data)
+        {
+            var fromUserId = RequireUserId();
+            var peer = _groupCalls.SignalTargetOf(callId, fromUserId, Context.ConnectionId, toUserId);
+            if (peer == null) return;
+
+            await Clients.Client(peer).SendAsync(GroupCallService.Events.Signal, new { callId, fromUserId, data });
+        }
+
         // ── helpers ───────────────────────────────────────────────────────────
 
         private Guid? CurrentUserId =>
@@ -166,12 +218,14 @@ namespace Miqat.API.Hubs
             }
         }
 
+        /// <summary>Friends, and the people who share a group chat with the user: both show who is online.</summary>
         private async Task TellFriendsAsync(Guid userId, bool isOnline)
         {
-            var friends = await _people.GetFriendIdsAsync(userId);
-            if (friends.Count == 0) return;
+            var audience = await _people.GetFriendIdsAsync(userId);
+            audience.UnionWith(await _people.GetGroupChatMateIdsAsync(userId));
+            if (audience.Count == 0) return;
 
-            await Clients.Groups(friends.Select(UserGroup).ToList())
+            await Clients.Groups(audience.Select(UserGroup).ToList())
                 .SendAsync(ChatService.Events.Presence, new { userId, isOnline });
         }
     }

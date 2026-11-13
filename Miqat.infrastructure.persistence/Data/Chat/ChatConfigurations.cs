@@ -12,9 +12,16 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
         builder.HasKey(c => c.Id);
 
         builder.Property(c => c.DirectKey).HasMaxLength(65);
+        builder.Property(c => c.Name).HasMaxLength(Conversation.MaxNameLength);
 
         // One chat per pair of people. Group chats (no key) are not affected.
         builder.HasIndex(c => c.DirectKey).IsUnique().HasFilter("\"DirectKey\" IS NOT NULL");
+
+        // The group outlives the account of the person who created it.
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(c => c.CreatedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
 
@@ -52,7 +59,16 @@ public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
 
         // Stored as its name, like the other enums of this database.
         builder.Property(m => m.CallOutcome).HasConversion<string>().HasMaxLength(20);
+        builder.Property(m => m.GroupEvent).HasConversion<string>().HasMaxLength(20);
+        builder.Property(m => m.GroupName).HasMaxLength(Conversation.MaxNameLength);
         builder.Ignore(m => m.IsCall);
+        builder.Ignore(m => m.IsGroupEvent);
+
+        // A line about a person goes when that person's account is removed for good.
+        builder.HasOne(m => m.TargetUser)
+            .WithMany()
+            .HasForeignKey(m => m.TargetUserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(m => m.Conversation)
             .WithMany(c => c.Messages)

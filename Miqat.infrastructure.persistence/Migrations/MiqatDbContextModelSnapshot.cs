@@ -283,6 +283,9 @@ namespace Miqat.infrastructure.persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<int?>("CallParticipants")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("CallSeconds")
                         .HasColumnType("integer");
 
@@ -301,10 +304,21 @@ namespace Miqat.infrastructure.persistence.Migrations
                     b.Property<DateTime?>("EditedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("GroupEvent")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("GroupName")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("TargetUserId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -316,6 +330,8 @@ namespace Miqat.infrastructure.persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("SenderId");
+
+                    b.HasIndex("TargetUserId");
 
                     b.HasIndex("ConversationId", "CreatedAt");
 
@@ -375,6 +391,9 @@ namespace Miqat.infrastructure.persistence.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("DirectKey")
                         .HasMaxLength(65)
                         .HasColumnType("character varying(65)");
@@ -382,8 +401,15 @@ namespace Miqat.infrastructure.persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsGroup")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime?>("LastMessageAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -392,6 +418,8 @@ namespace Miqat.infrastructure.persistence.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("DirectKey")
                         .IsUnique()
@@ -414,6 +442,9 @@ namespace Miqat.infrastructure.persistence.Migrations
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -682,6 +713,52 @@ namespace Miqat.infrastructure.persistence.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("Miqat.Domain.Entities.GroupComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("GroupId", "CreatedAt");
+
+                    b.ToTable("GroupComments", (string)null);
                 });
 
             modelBuilder.Entity("Miqat.Domain.Entities.GroupMember", b =>
@@ -1461,9 +1538,16 @@ namespace Miqat.infrastructure.persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Miqat.Domain.Entities.User", "TargetUser")
+                        .WithMany()
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.Navigation("Conversation");
 
                     b.Navigation("Sender");
+
+                    b.Navigation("TargetUser");
                 });
 
             modelBuilder.Entity("Miqat.Domain.Entities.Comment", b =>
@@ -1483,6 +1567,14 @@ namespace Miqat.infrastructure.persistence.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("Miqat.Domain.Entities.Conversation", b =>
+                {
+                    b.HasOne("Miqat.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Miqat.Domain.Entities.ConversationParticipant", b =>
@@ -1573,6 +1665,32 @@ namespace Miqat.infrastructure.persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Miqat.Domain.Entities.GroupComment", b =>
+                {
+                    b.HasOne("Miqat.Domain.Entities.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Miqat.Domain.Entities.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Miqat.Domain.Entities.GroupComment", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("Miqat.Domain.Entities.GroupMember", b =>

@@ -14,10 +14,12 @@ namespace Miqat.API.Controllers
     public class GroupController : ControllerBase
     {
         private readonly IGroupService _groupService;
+        private readonly IGroupCommentService _comments;
 
-        public GroupController(IGroupService groupService)
+        public GroupController(IGroupService groupService, IGroupCommentService comments)
         {
             _groupService = groupService;
+            _comments = comments;
         }
 
         private Guid GetCurrentUserId() =>
@@ -88,6 +90,50 @@ namespace Miqat.API.Controllers
             var response = await _groupService.GetGroupMembersPaged(groupId, pageIndex, pageSize);
             if (!response.Success) return NotFound(new { message = response.Message });
             return Ok(response.Data);
+        }
+
+        // ── Discussion ────────────────────────────────────────────────────────
+        // The project's owner and members write to each other here. Anyone else
+        // gets the project's own answer: 403, or 404 when it does not exist.
+
+        /// <summary>
+        /// The discussion, oldest first: the newest page, or with "before" (a
+        /// comment id) the page before that comment. "limit" counts comments of
+        /// their own (1-100, 30 when left out); each comes with all its replies.
+        /// </summary>
+        [HttpGet("{groupId:guid}/comments")]
+        public async Task<IActionResult> GetComments(Guid groupId, [FromQuery] Guid? before, [FromQuery] int? limit)
+            => Ok(await _comments.GetPageAsync(groupId, before, limit));
+
+        /// <summary>Writes a comment, or with "parentId" a reply to one. Mentioned members are notified.</summary>
+        [HttpPost("{groupId:guid}/comments")]
+        public async Task<IActionResult> AddComment(Guid groupId, [FromBody] CreateGroupCommentDto dto)
+        {
+            var comment = await _comments.AddAsync(groupId, dto);
+            return CreatedAtAction(nameof(GetComments), new { groupId }, comment);
+        }
+
+        /// <summary>Feeds the @-picker of the discussion: everyone on the project but me.</summary>
+        [HttpGet("{groupId:guid}/mentionable")]
+        public async Task<IActionResult> GetMentionable(Guid groupId)
+            => Ok(await _comments.GetMentionableAsync(groupId));
+
+        /// <summary>Edit a comment of the discussion. Author only.</summary>
+        [HttpPut("comments/{commentId:guid}")]
+        public async Task<IActionResult> UpdateComment(Guid commentId, [FromBody] UpdateCommentDto dto)
+        {
+            var comment = await _comments.UpdateAsync(commentId, dto.Content);
+            if (comment == null) return NotFound(new { message = "Comment not found." });
+            return Ok(comment);
+        }
+
+        /// <summary>Delete a comment of the discussion and the replies to it. Its author or the project's owner.</summary>
+        [HttpDelete("comments/{commentId:guid}")]
+        public async Task<IActionResult> DeleteComment(Guid commentId)
+        {
+            var result = await _comments.DeleteAsync(commentId);
+            if (!result) return NotFound(new { message = "Comment not found." });
+            return NoContent();
         }
     }
 }

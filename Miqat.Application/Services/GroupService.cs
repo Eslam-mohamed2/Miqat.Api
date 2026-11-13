@@ -74,6 +74,9 @@ namespace Miqat.Application.Services
                          && t.Status == TaskStatus.Completed,
                     t => t.GroupId!.Value);
 
+            var commentCounts = await _unitOfWork.Repository<GroupComment>()
+                .CountGroupedAsync(c => ids.Contains(c.GroupId) && !c.IsDeleted, c => c.GroupId);
+
             // OwnerName has the same problem the counts had: the mapper reads
             // group.Owner?.FullName, and FindAsync loads no navigations.
             var ownerIds = groups.Select(g => g.OwnerId).Distinct().ToList();
@@ -108,6 +111,7 @@ namespace Miqat.Application.Services
                 dto.MemberCount = members + (ownerAlreadyMember.Contains(dto.Id) ? 0 : 1);
                 dto.TaskCount = taskCounts.TryGetValue(dto.Id, out var t) ? t : 0;
                 dto.CompletedTaskCount = doneCounts.TryGetValue(dto.Id, out var d) ? d : 0;
+                dto.CommentCount = commentCounts.TryGetValue(dto.Id, out var c) ? c : 0;
             }
 
             return dtos;

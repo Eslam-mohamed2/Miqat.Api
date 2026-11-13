@@ -54,6 +54,9 @@ public sealed class SwaggerSamples
 
     public Guid? TaskId { get; init; }
     public Guid? CommentId { get; init; }
+
+    /// <summary>A comment the account wrote in the discussion of that project.</summary>
+    public Guid? GroupCommentId { get; init; }
     public Guid? NotificationId { get; init; }
     public Guid? MentionId { get; init; }
     public Guid? BoardId { get; init; }
@@ -97,6 +100,14 @@ public sealed class SwaggerSamples
 
     /// <summary>A message the account sent in that chat (only the sender may edit or delete it).</summary>
     public Guid? ChatMessageId { get; init; }
+
+    /// <summary>A group chat of the account, preferring one it is an admin of, and someone else in it.</summary>
+    public Guid? GroupConversationId { get; init; }
+    public Guid? GroupChatMemberUserId { get; init; }
+
+    /// <summary>Friends of the account: enough to start a group with, and one who is not in that group yet.</summary>
+    public IReadOnlyList<Guid> FriendIds { get; init; } = Array.Empty<Guid>();
+    public Guid? GroupChatCandidateUserId { get; init; }
 
     /// <summary>A word that occurs in one of the account's task titles.</summary>
     public string SearchWord { get; init; } = "report";
@@ -295,6 +306,14 @@ public sealed class SwaggerSampleProvider
             .Select(c => (Guid?)c.Id)
             .FirstOrDefault();
 
+        // A comment of the account in a project's discussion, preferring the example project.
+        var groupCommentId = db.GroupComments.AsNoTracking()
+            .Where(c => c.AuthorId == myId && !c.IsDeleted && !c.Group.IsDeleted)
+            .OrderByDescending(c => groupId.HasValue && c.GroupId == groupId)
+            .ThenByDescending(c => c.CreatedAt).ThenBy(c => c.Id)
+            .Select(c => (Guid?)c.Id)
+            .FirstOrDefault();
+
         var notificationId = db.Notifications.AsNoTracking()
             .Where(n => n.RecipientUserId == myId && !n.IsDeleted)
             .OrderBy(n => n.IsRead).ThenByDescending(n => n.CreatedAt).ThenBy(n => n.Id)
@@ -399,22 +418,43 @@ public sealed class SwaggerSampleProvider
 
         // ── Chat: one with a friend, and the newest message the account sent there ─
         var conversationId = db.ConversationParticipants.AsNoTracking()
-            .Where(p => p.UserId == myId)
+            .Where(p => p.UserId == myId && !p.Conversation.IsGroup)
             .OrderByDescending(p => p.Conversation.Participants.Any(o => o.UserId != myId && friendIds.Contains(o.UserId)))
             .ThenByDescending(p => p.Conversation.LastMessageAt).ThenBy(p => p.ConversationId)
             .Select(p => (Guid?)p.ConversationId)
             .FirstOrDefault();
 
+        // A text the account wrote: call records and lines about a group cannot be changed.
         var chatMessageId = db.ChatMessages.AsNoTracking()
-            .Where(m => m.ConversationId == conversationId && m.SenderId == myId && !m.IsDeleted)
+            .Where(m => m.ConversationId == conversationId && m.SenderId == myId && !m.IsDeleted &&
+                        m.CallOutcome == null && m.GroupEvent == null)
             .OrderByDescending(m => m.CreatedAt).ThenBy(m => m.Id)
             .Select(m => (Guid?)m.Id)
             .FirstOrDefault();
+
+        // ── Group chat: one the account can manage, someone in it, a friend who is not ─
+        var groupConversationId = db.ConversationParticipants.AsNoTracking()
+            .Where(p => p.UserId == myId && p.Conversation.IsGroup)
+            .OrderByDescending(p => p.IsAdmin)
+            .ThenByDescending(p => p.Conversation.Participants.Count)
+            .ThenBy(p => p.ConversationId)
+            .Select(p => (Guid?)p.ConversationId)
+            .FirstOrDefault();
+
+        var groupChatMemberIds = db.ConversationParticipants.AsNoTracking()
+            .Where(p => p.ConversationId == groupConversationId && p.UserId != myId)
+            .OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id)
+            .Select(p => p.UserId)
+            .ToList();
 
         return new SwaggerSamples
         {
             ConversationId = conversationId,
             ChatMessageId = chatMessageId,
+            GroupConversationId = groupConversationId,
+            GroupChatMemberUserId = groupChatMemberIds.Select(id => (Guid?)id).FirstOrDefault(),
+            FriendIds = friendIds.Take(2).ToList(),
+            GroupChatCandidateUserId = friendIds.Where(id => !groupChatMemberIds.Contains(id)).Select(id => (Guid?)id).FirstOrDefault(),
             CalendarId = calendarId,
             EventId = plainEvent?.Id ?? repeatingEvent?.Id,
             RepeatingEventId = repeatingEvent?.Id,
@@ -445,6 +485,7 @@ public sealed class SwaggerSampleProvider
             NonMemberUserId = nonMemberUserId,
             TaskId = taskId,
             CommentId = commentId,
+            GroupCommentId = groupCommentId,
             NotificationId = notificationId,
             MentionId = mentionId,
             BoardId = boardId,

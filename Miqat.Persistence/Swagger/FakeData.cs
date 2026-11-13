@@ -73,6 +73,9 @@ public sealed class FakeData
         "Thanks, that fixed it!"
     };
 
+    private static readonly string[] ChatGroupNames =
+        { "Weekend plans", "Launch crew", "Study group", "Family" };
+
     private static readonly string[] Bios =
     {
         "Product designer who likes tidy calendars.",
@@ -127,6 +130,7 @@ public sealed class FakeData
         CalendarName = Pick(Calendars);
         ChecklistLine = Pick(ChecklistLines);
         ChatLine = Pick(ChatLines);
+        ChatGroupName = Pick(ChatGroupNames);
     }
 
     /// <summary>A person who does not have an account yet.</summary>
@@ -154,6 +158,7 @@ public sealed class FakeData
     public string CalendarName { get; }
     public string ChecklistLine { get; }
     public string ChatLine { get; }
+    public string ChatGroupName { get; }
 
     /// <summary>Boards store their drawing as a JSON document in a string.</summary>
     public string BoardContent =>

@@ -38,6 +38,7 @@ namespace Miqat.infrastructure.persistence.Data
         public DbSet<Conversation> Conversations => Set<Conversation>();
         public DbSet<ConversationParticipant> ConversationParticipants => Set<ConversationParticipant>();
         public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+        public DbSet<GroupComment> GroupComments => Set<GroupComment>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
